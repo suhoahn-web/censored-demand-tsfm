@@ -156,11 +156,12 @@ def fig3_censoring_factorial() -> None:
     w = 0.34
     fig, axes = plt.subplots(1, 2, figsize=(ONE_HALF, 2.3))
     for ax, metric, ylab in [(axes[0], "wpe", "WPE (bias)"), (axes[1], "wape", "WAPE")]:
-        for k, (cond, hatch, col) in enumerate([("Censored sales", "", "#9ec5f4"),
-                                                ("Recovered demand", "///", "#2a78d6")]):
+        # 학술지 관행: 빗금 대신 무채색/유채색 단색 쌍 (before/after)
+        for k, (cond, col) in enumerate([("Censored sales", "#b5b5b5"),
+                                         ("Recovered demand", "#2a78d6")]):
             vals = [d[(d.model == m) & (d.cond == cond)][metric].mean() for m in models]
             ax.bar(x + (k - 0.5) * w, vals, w * 0.92, label=cond, color=col,
-                   edgecolor="white", linewidth=0.6, hatch=hatch, zorder=3)
+                   edgecolor="white", linewidth=0.6, zorder=3)
         ax.set_xticks(x, [m.replace(" (", "\n(") for m in models], fontsize=6.2)
         ax.set_ylabel(ylab)
         ax.grid(axis="x", visible=False)
@@ -205,28 +206,23 @@ def fig5_quadrant(dataset: str) -> None:
     show = [c for c in rq.index if any(k in c for k in
             ["chronos2_lt_raw", "chronos2_lt_mask", "tirex_lt_mask", "moirai2_lt_mask",
              "lightgbm", "ets_lt_raw", "ft_lora_r16_s0"])]
-    fig, ax = plt.subplots(figsize=(SINGLE, 2.5))
+    # 학술지 관행(예: Theodorou et al. 2025 EJOR Fig.4): 방법별 고유 색 + 우측 범례
+    method_palette = ["#1f6fb2", "#e07b39", "#2e8b57", "#c8443c",
+                      "#7b5bb5", "#8c6d31", "#3aa6b9"]
+    fig, ax = plt.subplots(figsize=(SINGLE + 1.1, 2.5))
     x = np.arange(len(order))
-    texts = []
-    for run in show:
+    for run, col in zip(show, method_palette):
         style = "--" if "mask" in run else "-"
-        ax.plot(x, rq.loc[run], style, marker="o", ms=3,
-                color=FAMILY_COLORS[family_of(run)], lw=1.0, zorder=3)
-        texts.append(ax.annotate(short_label(run), (x[-1], rq.loc[run].iloc[-1]),
-                                 xytext=(x[-1] + 0.08, rq.loc[run].iloc[-1]),
-                                 fontsize=5.8, color=INK_2, va="center"))
-    try:  # 끝점 라벨 충돌 회피 (세로로만 이동)
-        from adjustText import adjust_text
-        adjust_text(texts, ax=ax, only_move={"text": "y", "static": "y"},
-                    expand=(1.05, 1.6), arrowprops=dict(arrowstyle="-", color=REFLINE, lw=0.3))
-    except ImportError:
-        pass
+        ax.plot(x, rq.loc[run], style, marker="o", ms=3, color=col, lw=1.1,
+                label=short_label(run), zorder=3)
     ax.set_xticks(x, order, fontsize=6.5)
     ax.set_xlabel("Demand pattern (ADI $\\times$ CV$^2$ quadrant)")
     ax.set_ylabel("Mean rank (lower is better)")
     ax.invert_yaxis()
-    ax.set_xlim(-0.2, len(order) + 0.55)
+    ax.set_xlim(-0.2, len(order) - 0.8)
     ax.grid(axis="x", visible=False)
+    ax.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), fontsize=6,
+              frameon=False, handlelength=1.6, labelspacing=0.45)
     fig.tight_layout(pad=0.4)
     savefig(fig, FIGDIR / f"fig4_quadrant_{dataset}.png")
 
