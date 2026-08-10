@@ -19,7 +19,7 @@ def draw() -> None:
     orange = FAMILY_COLORS["TSFM (fine-tuned)"]
     fig, ax = plt.subplots(figsize=(ONE_HALF, 2.6))
     ax.set_xlim(0, 100)
-    ax.set_ylim(0, 56)
+    ax.set_ylim(0, 60)
     ax.axis("off")
 
     def box(x, y, w, h, text, fc="white", fs=6.6):
@@ -37,39 +37,32 @@ def draw() -> None:
 
     def lab(x, y, t, color=INK_2, fs=5.9, ha="center", va="center"):
         ax.text(x, y, t, ha=ha, va=va, fontsize=fs, color=color, zorder=6,
-                linespacing=1.4, bbox=dict(fc="white", ec="none", pad=0.9))
+                linespacing=1.4)
 
-    # 상단 파이프라인
-    box(1, 38, 18, 13, "Latent\ndemand $D_t$")
-    box(26, 38, 21, 13, "Observed sales\n$y_t=\\min(D_t,A_t)$")
-    box(56, 38, 19, 13, "Forecast\ndistribution")
-    box(81, 38, 18, 13, "Order\nquantity")
-    arrow((19, 44.5), (26, 44.5))
-    arrow((47, 44.5), (56, 44.5))
-    lab(51.5, 47.6, "fit")
-    arrow((75, 44.5), (81, 44.5))
+    # 사각 순환: 판매(좌상) → 예측(우상) → 발주(우하) → 가용재고(좌하) → 판매
+    box(21, 42, 24, 13, "Observed sales\n$y_t=\\min(D_t,A_t)$")
+    box(60, 42, 19, 13, "Forecast\ndistribution")
+    box(60, 5, 19, 13, "Order\nquantity $q_t$")
+    box(21, 5, 24, 13, "Available stock\n$A_t$", fc="#f2f2ef")
+    box(1, 24, 15, 12, "Latent\ndemand $D_t$")
 
-    # 되먹임 순환: 발주 → 가용재고 → 절단
-    box(26, 12, 21, 11, "Availability $A_t$", fc="#f2f2ef")
-    arrow((90, 38), (47, 19), rad=0.22)
-    lab(83, 24.5, "sets next\nperiod's stock")
-    arrow((32, 23), (32, 38))
-    lab(24.5, 30.5, "truncates", ha="right")
+    arrow((16, 30), (26, 42), rad=-0.18)                       # 수요 → 판매
+    arrow((45, 48.5), (60, 48.5))                              # 판매 → 예측 (fit)
+    lab(52.5, 51.4, "fit")
+    lab(52.5, 45.6, "(1) mask\n(2) recover", color=orange, fs=5.7)
+    arrow((69.5, 42), (69.5, 18))                              # 예측 → 발주
+    lab(71.3, 30, "(3) order at\nquantile $q$", color=orange, ha="left", fs=5.7)
+    arrow((60, 11.5), (45, 11.5))                              # 발주 → 재고
+    lab(52.5, 14.3, "next period's\nstock", fs=5.5)
+    arrow((33, 18), (33, 42))                                  # 재고 → 판매 (절단)
+    lab(31.3, 30, "truncates", ha="right")
 
-    # 개입 지점
-    arrow((41, 34), (41, 27.5), color=orange, style="--")
-    lab(43, 30.5, "(1) mask\n(2) recover", color=orange, ha="left")
-    ax.plot([88, 88], [38, 34.5], ls="--", lw=0.8, color=orange, zorder=2)
-    lab(88, 32.8, "(3) ordering\nquantile", color=orange, va="top")
+    # 평가 (점선 유입)
+    box(84, 20, 15.5, 20, "Evaluation on\nuncensored\ndays: accuracy,\nbias, cost",
+        fc="#f2f2ef", fs=6.0)
+    arrow((79, 45.5), (88, 40), style=":")
+    arrow((79, 14.5), (88, 20), style=":")
 
-    # 평가
-    box(56, 12, 43, 11, "Scored on uncensored days only:\n"
-                        "accuracy, bias, and inventory cost", fc="#f2f2ef", fs=6.2)
-    arrow((62, 38), (62, 23), style=":")
-
-    ax.text(1, 8.5, "Censoring is self-reinforcing: a downward-biased forecast orders "
-                    "less,\nwhich raises the chance of another stockout next period.",
-            fontsize=6, color=INK_2, va="top", linespacing=1.5)
     fig.tight_layout(pad=0.2)
     savefig(fig, FIGDIR / "fig1_framework.png")
 
