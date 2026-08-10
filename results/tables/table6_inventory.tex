@@ -1,0 +1,43 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Inventory cost per unit of demand under three cost scenarios (FreshRetailNet-LT, shelf life 2 days, lead time 0). All methods order at the same quantile within a scenario (0.5, 0.7 and 0.9 respectively).}
+\label{tab:table6_inventory}
+\begin{tabular}{lrrrrr}
+\toprule
+Model & Family & $b=0.3$ & $b=1.0$ & $b=3.0$ & Fill rate ($b=3$) \\
+\midrule
+C2 LoRA r16 (lr 1e-3) & TSFM (fine-tuned) & 0.0560 & 0.0935 & 0.1094 & 0.984 \\
+C2 LoRA r16 (lr 1e-5) & TSFM (fine-tuned) & 0.0578 & 0.0953 & 0.1106 & 0.985 \\
+C2 full-FT & TSFM (fine-tuned) & 0.0582 & 0.0972 & 0.1125 & 0.983 \\
+TiRex & TSFM (zero-shot) & 0.0652 & 0.1074 & 0.1129 & 0.984 \\
+C2 LoRA r16 & TSFM (fine-tuned) & 0.0577 & 0.0965 & 0.1131 & 0.983 \\
+C2 LoRA r32 & TSFM (fine-tuned) & 0.0577 & 0.0967 & 0.1132 & 0.983 \\
+C2 LoRA r8 & TSFM (fine-tuned) & 0.0578 & 0.0966 & 0.1132 & 0.983 \\
+Chronos-2 & TSFM (zero-shot) & 0.0602 & 0.1006 & 0.1156 & 0.983 \\
+Moirai-2 & TSFM (zero-shot) & 0.0657 & 0.1106 & 0.1176 & 0.980 \\
+TimesFM & TSFM (zero-shot) & 0.0627 & 0.1067 & 0.1181 & 0.980 \\
+LightGBM & Tree/ML & 0.0536 & 0.0945 & 0.1197 & 0.976 \\
+C2 LoRA r16 + mask & TSFM (fine-tuned) & 0.0679 & 0.1097 & 0.1346 & 0.982 \\
+ETS+EQ & Statistical & 0.0562 & 0.0969 & 0.1430 & 0.973 \\
+Chronos-2 + mask & TSFM (zero-shot) & 0.0719 & 0.1181 & 0.1473 & 0.980 \\
+TiRex + mask & TSFM (zero-shot) & 0.0747 & 0.1214 & 0.1496 & 0.983 \\
+TSB+EQ & Statistical & 0.0566 & 0.0997 & 0.1524 & 0.973 \\
+Croston+EQ & Statistical & 0.0569 & 0.1000 & 0.1524 & 0.973 \\
+SBA+EQ & Statistical & 0.0573 & 0.1016 & 0.1554 & 0.973 \\
+Moirai-2 + mask & TSFM (zero-shot) & 0.0822 & 0.1446 & 0.1752 & 0.967 \\
+TimesFM + mask & TSFM (zero-shot) & 0.0743 & 0.1356 & 0.1908 & 0.957 \\
+sNaive+EQ & Statistical & 0.0738 & 0.1334 & 0.2061 & 0.964 \\
+Croston & Statistical & 0.0696 & nan & nan & -- \\
+ETS & Statistical & 0.0598 & nan & nan & -- \\
+SBA & Statistical & 0.0757 & nan & nan & -- \\
+sNaive & Statistical & 0.0751 & nan & nan & -- \\
+TSB & Statistical & 0.0698 & nan & nan & -- \\
+TTM + mask & TSFM (zero-shot) & 0.1169 & nan & nan & -- \\
+TTM & TSFM (zero-shot) & 0.0665 & nan & nan & -- \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Unit purchase cost normalised to 1; $b$ is the unit shortage cost (lost margin). Lower is better. Fixing the ordering quantile avoids granting any method test-set freedom to tune its service level.
+\end{tablenotes}
+\end{table}

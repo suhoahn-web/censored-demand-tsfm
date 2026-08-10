@@ -1,0 +1,14 @@
+**Adaptation strategies for Chronos-2 on FreshRetailNet-LT. WAPE and WPE in \%; standard deviation over seeds in parentheses.**
+
+| Configuration         | Seeds   | WAPE         |   WPE |    WQL |   GPU min |   Trainable |
+|:----------------------|:--------|:-------------|------:|-------:|----------:|------------:|
+| Zero-shot             | --      | 25.34        | -6.17 | 0.1759 |       0   |           0 |
+| C2 full-FT            | 3       | 24.45 (0.02) | -5.69 | 0.1713 |       5.7 | 119,477,664 |
+| C2 LoRA r16           | 3       | 24.54 (0.04) | -5.5  | 0.1716 |       5.3 |   1,179,648 |
+| C2 LoRA r16 (lr 1e-3) | 3       | 24.44 (0.03) | -4.64 | 0.1712 |       5.1 |   1,179,648 |
+| C2 LoRA r16 (lr 1e-5) | 1       | 24.93        | -5.29 | 0.1733 |       4.4 |   1,179,648 |
+| C2 LoRA r16 + mask    | 3       | 24.46 (0.02) | -2.33 | 0.1688 |       5.4 |   1,179,648 |
+| C2 LoRA r32           | 3       | 24.54 (0.03) | -5.55 | 0.1716 |       5.3 |   2,359,296 |
+| C2 LoRA r8            | 3       | 24.55 (0.04) | -5.52 | 0.1717 |       5.4 |     589,824 |
+
+Trainable = number of updated parameters; the base model has 120M. GPU minutes measured on a single NVIDIA A100 80GB.

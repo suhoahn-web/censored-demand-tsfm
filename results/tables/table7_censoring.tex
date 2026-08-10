@@ -1,0 +1,19 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Effect of latent demand recovery on accuracy and bias (FreshRetailNet-50K). Models are trained on censored sales versus recovered demand and evaluated against observed sales in both cases.}
+\label{tab:table7_censoring}
+\begin{tabular}{lrrrr}
+\toprule
+Model & WAPE (censored) & WAPE (recovered) & WPE (censored) & WPE (recovered) \\
+\midrule
+Chronos-2 (zero-shot) & 31.83 & 30.42 & -6.75 & +4.16 \\
+Moirai-2 (zero-shot) & 31.94 & 29.69 & -10.72 & +0.31 \\
+TFT (local, 3 seeds) & 31.70 (0.83) & 29.32 (1.01) & -10.02 (3.03) & +4.42 (4.49) \\
+DLinear (local) & 31.52 & 30.55 & -5.50 & +6.20 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item WAPE and WPE in \%. Recovery removes most of the downward bias for every model family.
+\end{tablenotes}
+\end{table}

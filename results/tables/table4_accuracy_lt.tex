@@ -1,0 +1,40 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Forecast accuracy on FreshRetailNet-LT (official 7-day evaluation, days without stockouts only). WAPE and WPE in \%; WPE $<0$ indicates under-forecasting.}
+\label{tab:table4_accuracy_lt}
+\begin{tabular}{lrrrrrr}
+\toprule
+Model & Family & WAPE & MASE & WQL & CRPS & WPE \\
+\midrule
+C2 LoRA r16 (lr 1e-3) & TSFM (fine-tuned) & 24.44 & 0.851 & 0.1712 & 0.3298 & -4.64 \\
+C2 full-FT & TSFM (fine-tuned) & 24.45 & 0.850 & 0.1713 & 0.3300 & -5.69 \\
+C2 LoRA r16 + mask & TSFM (fine-tuned) & 24.46 & 0.898 & 0.1688 & 0.3251 & -2.33 \\
+C2 LoRA r16 & TSFM (fine-tuned) & 24.54 & 0.855 & 0.1716 & 0.3306 & -5.50 \\
+LightGBM & Tree/ML & 24.82 & 0.841 & 0.1961 & 0.3778 & -5.36 \\
+Croston+EQ & Statistical & 25.20 & 0.890 & 0.2080 & 0.4006 & -2.29 \\
+TSB+EQ & Statistical & 25.25 & 0.891 & 0.2084 & 0.4014 & -2.28 \\
+SBA+EQ & Statistical & 25.29 & 0.890 & 0.2085 & 0.4017 & -2.54 \\
+Chronos-2 & TSFM (zero-shot) & 25.34 & 0.878 & 0.1759 & 0.3389 & -6.17 \\
+ETS+EQ & Statistical & 25.38 & 0.887 & 0.2091 & 0.4027 & -1.33 \\
+ETS & Statistical & 25.42 & 0.885 & 0.2542 & 0.4897 & -4.26 \\
+TimesFM & TSFM (zero-shot) & 25.69 & 0.884 & 0.2016 & 0.3884 & -8.23 \\
+Chronos-2 + mask & TSFM (zero-shot) & 26.02 & 0.973 & 0.1792 & 0.3452 & -1.92 \\
+TiRex + mask & TSFM (zero-shot) & 26.06 & 0.964 & 0.2042 & 0.3933 & -4.98 \\
+TiRex & TSFM (zero-shot) & 26.09 & 0.908 & 0.2054 & 0.3957 & -9.96 \\
+Moirai-2 & TSFM (zero-shot) & 26.12 & 0.901 & 0.2050 & 0.3948 & -9.86 \\
+Croston & Statistical & 26.64 & 0.947 & 0.2664 & 0.5131 & -8.59 \\
+TSB & Statistical & 26.72 & 0.947 & 0.2672 & 0.5146 & -8.94 \\
+SBA & Statistical & 27.44 & 0.967 & 0.2744 & 0.5285 & -13.16 \\
+TimesFM + mask & TSFM (zero-shot) & 27.86 & 1.040 & 0.2229 & 0.4294 & -0.90 \\
+Moirai-2 + mask & TSFM (zero-shot) & 27.88 & 1.054 & 0.2173 & 0.4186 & -7.45 \\
+TTM & TSFM (zero-shot) & 28.08 & 1.019 & 0.2808 & 0.5408 & +0.47 \\
+sNaive & Statistical & 33.07 & 1.125 & 0.3307 & 0.6370 & -4.96 \\
+sNaive+EQ & Statistical & 33.43 & 1.143 & 0.2731 & 0.5261 & -1.21 \\
+TTM + mask & TSFM (zero-shot) & 38.16 & 1.451 & 0.3816 & 0.7351 & -24.67 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item EQ = empirical residual quantiles added to a point forecaster; mask = stockout hours masked in the input context.
+\end{tablenotes}
+\end{table}

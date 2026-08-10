@@ -1,0 +1,4 @@
+scenario,n,tau_wape,p_wape,tau_wql,p_wql,tau_crps,p_crps,tau_abs_wpe,p_abs_wpe
+high_margin_stockout_dominant,28,0.566,0.0,0.746,0.0,0.746,0.0,-0.037,0.7992
+low_margin_waste_dominant,28,0.619,0.0,0.556,0.0,0.556,0.0,0.079,0.57
+medium_margin,28,0.55,0.0,0.646,0.0,0.646,0.0,-0.011,0.9532

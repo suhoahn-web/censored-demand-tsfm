@@ -1,0 +1,21 @@
+# 데이터·체크포인트·대용량 산출물 — 전부 공개 소스에서 재생성 가능 (README 참조)
+data/raw/
+data/processed/
+data/checkpoints/
+results/zeroshot/
+results/finetune/
+results/finetune_v2/
+results/pilot/
+results/stale_pre_maskfix/
+results/*.parquet
+external/
+
+# 재생성 가능한 소형 산출물은 남긴다: results/*.csv, results/tables/, results/figures/
+
+# 환경·캐시
+logs/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+lightning_logs/
+*.log
