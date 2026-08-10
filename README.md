@@ -138,3 +138,12 @@ All GPU work ran on a single NVIDIA A100 80GB. Indicative costs: zero-shot
 inference over 10,000 series takes seconds to tens of minutes depending on the
 model; one Chronos-2 fine-tuning run takes about five minutes; reproducing the
 published TFT baseline takes about one hour.
+
+## 7. License and citation
+
+Code is released under the MIT License (see `LICENSE`). The FreshRetailNet
+datasets are distributed by Dingdong-Inc under CC-BY-4.0 and are not
+redistributed here. If you use this code, please cite the accompanying paper:
+
+> Ahn, S. Do time series foundation models add inventory value under demand
+> censoring? Evidence from fresh retail. (Under review.)
