@@ -208,3 +208,12 @@
 
 - `수요예측_GPU/코드/`를 실험 코드 루트로 확정 (CLAUDE.md, docs/, src/, configs/, data/, results/ 배치).
 - 원 설계 문서 원본은 `코드/연구설계/`에 보존, 사본을 `docs/`에 배치.
+
+## 2026-08-10 — 투고 정보·재현 패키지 저장소 확정
+
+- 저자: Suho Ahn (KAIST School of Business and Technology Management), 단독 저자.
+- CRediT: 단독 저자이므로 전 역할(Conceptualization ~ Visualization)을 Suho Ahn으로 기재.
+- 연구비 없음, 이해상충 없음 — Elsevier 표준 문안으로 Declarations 작성 완료.
+- 재현 패키지 저장소: `https://github.com/suhoahn-web/censored-demand-tsfm` (MIT License).
+  data/·checkpoints/·대용량 results/는 .gitignore로 제외 — 전부 공개 소스에서 재생성 가능.
+- Draft의 Data availability·§4.7에 저장소 URL 반영.
