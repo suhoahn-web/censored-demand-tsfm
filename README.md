@@ -1,7 +1,8 @@
 # Foundation models for censored fresh-retail demand — reproduction package
 
-Code and configuration for the experiments reported in *"Do time series foundation
-models add inventory value under demand censoring? Evidence from fresh retail."*
+Code and configuration for the experiments reported in *"Forecasting for perishable
+replenishment under demand censoring: an evaluation of time series foundation
+models."*
 
 Everything in this repository regenerates from public data: the two FreshRetailNet
 releases (CC-BY-4.0) and published model checkpoints. No proprietary data is used.
@@ -147,13 +148,12 @@ Code is released under the MIT License (see `LICENSE`). The FreshRetailNet
 datasets are distributed by Dingdong-Inc under CC-BY-4.0 and are not
 redistributed here.
 
-Archived releases of this repository are deposited on Zenodo:
-**[10.5281/zenodo.21898896](https://doi.org/10.5281/zenodo.21898896)** (concept
-DOI, resolves to the latest version). Please cite both the software and the
-accompanying paper:
+This repository is archived on Zenodo:
+**[10.5281/zenodo.21902351](https://doi.org/10.5281/zenodo.21902351)** (release
+v1.0.1). Please cite both the software and the accompanying paper:
 
 > Ahn, S. (2026). *censored-demand-tsfm: reproduction package* [Software].
-> Zenodo. https://doi.org/10.5281/zenodo.21898896
+> Zenodo. https://doi.org/10.5281/zenodo.21902351
 
 > Ahn, S. Forecasting for perishable replenishment under demand censoring: an
 > evaluation of time series foundation models. (Under review.)
