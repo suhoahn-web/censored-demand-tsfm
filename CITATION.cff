@@ -10,11 +10,17 @@ type: software
 authors:
   - family-names: Ahn
     given-names: Suho
+    orcid: "https://orcid.org/0009-0008-0232-2317"
     affiliation: >-
       School of Business and Technology Management, Korea Advanced Institute of
       Science and Technology (KAIST), Daejeon, Republic of Korea
     email: dkstngh3502@kaist.ac.kr
 repository-code: "https://github.com/suhoahn-web/censored-demand-tsfm"
+doi: 10.5281/zenodo.21898896
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.21898896
+    description: Concept DOI resolving to the latest archived version
 abstract: >-
   Reproduction package for a study of time series foundation models applied to
   censored fresh-retail demand. Five pre-trained models are crossed with three

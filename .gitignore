@@ -12,6 +12,14 @@ external/
 
 # 재생성 가능한 소형 산출물은 남긴다: results/*.csv, results/tables/, results/figures/
 
+# 내부 기획·인수인계 문서 (한국어, 재현과 무관 — 공개 저장소에서 제외)
+CLAUDE.md
+docs/
+연구설계/
+scripts/analyze_paper_structure.py
+scripts/pilot_*.py
+scripts/test_bias_hypothesis.py
+
 # 환경·캐시
 logs/
 __pycache__/

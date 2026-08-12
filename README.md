@@ -96,8 +96,7 @@ success or failure, which is how the reported experiments were executed.
 
 ## 4. Design decisions that affect the numbers
 
-These are recorded in full in `docs/decisions.md`; the four that most affect
-interpretation are:
+Four choices affect how the results should be read:
 
 1. **Scoring excludes censored days.** Accuracy is computed only on evaluation days
    with zero stocked-out hours, following the benchmark's reference
@@ -120,12 +119,15 @@ interpretation are:
 │   ├── experiments/  forecasting runs (zero-shot, fine-tuning, baselines)
 │   ├── eval/         metrics, inventory simulation, statistical tests
 │   └── viz/          figures and tables
-├── scripts/          unattended run queues, patches, validators
+├── scripts/          unattended run queues, baseline patches, validators
 ├── configs/          experiment configuration
-├── docs/             research design, decision log
 ├── external/         upstream baseline code (frn-50k-baseline, timesfm)
-└── results/          forecasts, metrics, figures, tables
+└── results/          metrics, statistical tests, figures, tables
 ```
+
+`scripts/verify_draft_numbers.py` recomputes every number reported in the paper
+from the stored results and reports any mismatch; it is the quickest way to check
+that the manuscript and this repository agree.
 
 `scripts/patch_frn_baseline.py` documents the two modifications made to the
 upstream baseline code: replacing Hugging Face downloads with local parquet reads
@@ -143,7 +145,15 @@ published TFT baseline takes about one hour.
 
 Code is released under the MIT License (see `LICENSE`). The FreshRetailNet
 datasets are distributed by Dingdong-Inc under CC-BY-4.0 and are not
-redistributed here. If you use this code, please cite the accompanying paper:
+redistributed here.
 
-> Ahn, S. Do time series foundation models add inventory value under demand
-> censoring? Evidence from fresh retail. (Under review.)
+Archived releases of this repository are deposited on Zenodo:
+**[10.5281/zenodo.21898896](https://doi.org/10.5281/zenodo.21898896)** (concept
+DOI, resolves to the latest version). Please cite both the software and the
+accompanying paper:
+
+> Ahn, S. (2026). *censored-demand-tsfm: reproduction package* [Software].
+> Zenodo. https://doi.org/10.5281/zenodo.21898896
+
+> Ahn, S. Forecasting for perishable replenishment under demand censoring: an
+> evaluation of time series foundation models. (Under review.)
