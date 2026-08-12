@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+title: >-
+  censored-demand-tsfm: reproduction package for "Forecasting for perishable
+  replenishment under demand censoring: an evaluation of time series foundation
+  models"
+message: >-
+  If you use this software, please cite both the software and the accompanying
+  paper.
+type: software
+authors:
+  - family-names: Ahn
+    given-names: Suho
+    affiliation: >-
+      School of Business and Technology Management, Korea Advanced Institute of
+      Science and Technology (KAIST), Daejeon, Republic of Korea
+    email: dkstngh3502@kaist.ac.kr
+repository-code: "https://github.com/suhoahn-web/censored-demand-tsfm"
+abstract: >-
+  Reproduction package for a study of time series foundation models applied to
+  censored fresh-retail demand. Five pre-trained models are crossed with three
+  censoring treatments and three adaptation strategies, and every forecast is
+  carried through to an order-up-to replenishment decision in a
+  perishable-inventory simulation with shelf life, first-in-first-out issuing
+  and waste, so that methods are compared by inventory cost as well as by
+  forecast error. Includes experiment scripts, evaluation metrics, the inventory
+  simulator, significance tests, figure and table generators, and per-run
+  metadata recording checkpoint hashes, seeds and library versions.
+keywords:
+  - demand forecasting
+  - censored demand
+  - time series foundation models
+  - inventory management
+  - perishable retail
+  - probabilistic forecasting
+license: MIT
+version: 1.0.0

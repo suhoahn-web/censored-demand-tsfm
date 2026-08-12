@@ -1,0 +1,38 @@
+{
+  "title": "censored-demand-tsfm: reproduction package for \"Forecasting for perishable replenishment under demand censoring: an evaluation of time series foundation models\"",
+  "description": "<p>Complete reproduction package for a study of time series foundation models applied to censored fresh-retail demand. Sales in perishable retail are a censored observation of demand, because periods in which an item is out of stock leave no record of unmet demand. This code evaluates five pre-trained foundation models (Chronos-2, TimesFM-2.5, Moirai-2, TTM-r2 and TiRex) crossed with three censoring treatments (raw sales, stockout masking, latent demand recovery) and three adaptation strategies (zero-shot, LoRA, full fine-tuning), against gradient boosting and classical intermittent-demand estimators. Every forecast is carried through to an order-up-to replenishment decision in a perishable-inventory simulation with shelf life, first-in-first-out issuing and waste, so that methods are compared by inventory cost as well as by forecast error.</p><p>The package contains the experiment scripts and run queues, the evaluation code (WAPE, MASE, weighted quantile loss, CRPS and weighted percentage error), the perishable-inventory simulator, the multiple-comparisons-with-the-best and Friedman-Nemenyi significance tests, the figure and table generators, and per-run metadata recording model checkpoint hashes, random seeds and library versions so that every number in the paper traces back to the run that produced it. Raw data and model checkpoints are not redistributed; both source datasets are public under CC-BY-4.0 and the README documents how to regenerate every artefact.</p><p>Datasets used: FreshRetailNet-LT and FreshRetailNet-50K (Dingdong-Inc, CC-BY-4.0).</p>",
+  "upload_type": "software",
+  "license": "MIT",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Ahn, Suho",
+      "affiliation": "School of Business and Technology Management, Korea Advanced Institute of Science and Technology (KAIST), Daejeon, Republic of Korea"
+    }
+  ],
+  "keywords": [
+    "demand forecasting",
+    "censored demand",
+    "time series foundation models",
+    "inventory management",
+    "perishable retail",
+    "probabilistic forecasting",
+    "low-rank adaptation",
+    "newsvendor",
+    "operational research",
+    "reproducibility"
+  ],
+  "language": "eng",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/suhoahn-web/censored-demand-tsfm",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    },
+    {
+      "identifier": "10.48550/arXiv.2505.16319",
+      "relation": "isDerivedFrom",
+      "scheme": "doi"
+    }
+  ]
+}
