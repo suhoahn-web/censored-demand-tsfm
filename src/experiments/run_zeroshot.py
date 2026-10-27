@@ -34,7 +34,8 @@ def checkpoint_hash(path: Path) -> str:
 
 
 def load_contexts(dataset: str, mask_stockout: bool, cutoff_date: str | None,
-                  limit: int | None, max_context_days: int | None = None) -> tuple[list, pd.DataFrame]:
+                  limit: int | None, max_context_days: int | None = None,
+                  min_context_days: int | None = None) -> tuple[list, pd.DataFrame]:
     train = pd.read_parquet(PROCESSED / f"{dataset}_daily_train.parquet",
                             columns=KEY + ["dt", "sale_amount", "stock_hour6_22_cnt"])
     eval_keys = (pd.read_parquet(PROCESSED / f"{dataset}_daily_eval.parquet", columns=KEY)
@@ -44,6 +45,14 @@ def load_contexts(dataset: str, mask_stockout: bool, cutoff_date: str | None,
     train = train.merge(eval_keys, on=KEY)
     if cutoff_date:
         train = train[train["dt"] <= pd.Timestamp(cutoff_date)]
+    if min_context_days:
+        # 이른 origin에서는 아직 개점하지 않은 시계열이 있어 컨텍스트가 비거나 너무 짧다.
+        # 모델이 붕괴하지 않도록 최소 이력 길이를 요구한다 (몇 개가 빠졌는지 메타에 기록).
+        n_obs = train.groupby(KEY)["dt"].size()
+        keep = n_obs[n_obs >= min_context_days].index
+        train = train.set_index(KEY).loc[keep].reset_index()
+        print(f"  min-context {min_context_days}d: kept {len(keep)} of "
+              f"{len(n_obs)} series", flush=True)
     train = train.sort_values(KEY + ["dt"])
     orig = None
     if mask_stockout:
@@ -112,7 +121,8 @@ def predict_ttm(model_path: str, contexts: list, batch_size: int):
     """TTM r2 (granite-tsfm): 점예측 전용, context 512 고정 → 좌측 0패딩+관측마스크,
     horizon 96 중 앞 7일 사용. 분위수는 [0.5] 단일(점예측)로 저장."""
     from tsfm_public import TinyTimeMixerForPrediction
-    model = TinyTimeMixerForPrediction.from_pretrained(model_path).to("cuda").eval()
+    dev = "cuda" if torch.cuda.is_available() else "cpu"  # CPU 폴백 (JORS R1 E3)
+    model = TinyTimeMixerForPrediction.from_pretrained(model_path).to(dev).eval()
     ctx_len = model.config.context_length
     out = []
     for i in range(0, len(contexts), batch_size):
@@ -125,8 +135,8 @@ def predict_ttm(model_path: str, contexts: list, batch_size: int):
             x[j, -len(c):] = np.where(obs, c, 0.0)
             m[j, -len(c):] = obs.astype(np.float32)
         with torch.no_grad():
-            o = model(past_values=torch.tensor(x).unsqueeze(-1).cuda(),
-                      past_observed_mask=torch.tensor(m).unsqueeze(-1).cuda())
+            o = model(past_values=torch.tensor(x).unsqueeze(-1).to(dev),
+                      past_observed_mask=torch.tensor(m).unsqueeze(-1).to(dev))
         out.append(o.prediction_outputs[:, :HORIZON, 0].float().cpu().numpy())
         if (i // batch_size) % 20 == 0:
             print(f"  {i + len(batch)}/{len(contexts)}", flush=True)
@@ -194,12 +204,14 @@ def main() -> None:
     ap.add_argument("--limit", type=int, default=None, help="파일럿용 시계열 수 제한")
     ap.add_argument("--max-context-days", type=int, default=None,
                     help="컨텍스트를 최근 N일로 절단 (이력 길이 효과 분리)")
+    ap.add_argument("--min-context-days", type=int, default=None,
+                    help="이력이 N일 미만인 시계열 제외 (이른 rolling origin용)")
     args = ap.parse_args()
 
     torch.manual_seed(0)
     contexts, keys = load_contexts(args.dataset, args.mask_stockout,
                                    args.cutoff_date, args.limit,
-                                   args.max_context_days)
+                                   args.max_context_days, args.min_context_days)
     lens = [len(c) for c in contexts]
     print(f"series: {len(contexts)}, context len min/med/max: "
           f"{min(lens)}/{int(np.median(lens))}/{max(lens)}", flush=True)
@@ -219,6 +231,7 @@ def main() -> None:
             "dataset": args.dataset, "mask_stockout": args.mask_stockout,
             "cutoff_date": args.cutoff_date, "quantiles": levels,
             "max_context_days": args.max_context_days,
+            "min_context_days": args.min_context_days,
             "n_all_nan_restored": getattr(load_contexts, "n_restored", 0),
             "horizon": HORIZON, "n_series": len(contexts),
             "torch": torch.__version__, "seed": 0}

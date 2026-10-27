@@ -55,6 +55,8 @@ def per_series_mase(dataset: str, nostock: bool = True) -> pd.DataFrame:
             continue
         if re.search(r"_s\d+_raw$", name):
             continue  # 시드 복제본은 Table 7 집계 전용
+        if "equ_" in name:
+            continue  # EQ 비검열-잔차 변형(R1 E4)은 부록 B.8 전용
         runs.append((name, str(meta_path).replace(".meta.json", "")))
     ft = RESULTS / "finetune_v2"
     if ft.exists():

@@ -71,6 +71,9 @@ def main() -> None:
     ap.add_argument("--n-origins", type=int, default=20, help="학습 origin 수")
     ap.add_argument("--num-boost-round", type=int, default=300)
     ap.add_argument("--out-dir", default="results/zeroshot")
+    ap.add_argument("--cutoff-date", default=None,
+                    help="(R1 E2) origin별 재학습: train을 이 날짜까지로 자르고 다음 7일을 예측 "
+                         "(타깃·공변량은 train 패널에서 구성, 이력 90일 미만 시계열 제외)")
     args = ap.parse_args()
 
     import lightgbm as lgb
@@ -82,6 +85,18 @@ def main() -> None:
     train = train.merge(eval_keys, on=KEY)
     ev = pd.read_parquet(PROCESSED / f"{args.dataset}_daily_eval.parquet",
                          columns=KEY + ["dt"] + COV)
+    tag = ""
+    if args.cutoff_date:
+        cut = pd.Timestamp(args.cutoff_date)
+        fut = train[(train["dt"] > cut) & (train["dt"] <= cut + pd.Timedelta(days=HORIZON))]
+        train = train[train["dt"] <= cut]
+        n_obs = train.groupby(KEY)["dt"].size()
+        keep = n_obs[n_obs >= 90].index
+        train = train.set_index(KEY).loc[keep].reset_index()
+        fut = fut.set_index(KEY).loc[fut.set_index(KEY).index.intersection(keep)].reset_index()
+        ev = fut[KEY + ["dt"] + COV]
+        tag = f"_mo{args.cutoff_date.replace('-', '')}"
+        print(f"origin {args.cutoff_date}: {len(keep)} series with >=90 days", flush=True)
 
     dates = sorted(train["dt"].unique())
     last = dates[-1]
@@ -129,10 +144,10 @@ def main() -> None:
         rows[f"q{q}"] = preds[f"q{q}"]
     rows["tweedie_point"] = preds["tweedie"]
     rows = rows.sort_values(KEY + ["h"]).reset_index(drop=True)
-    out_path = out_dir / f"lightgbm_{args.dataset}_raw.parquet"
+    out_path = out_dir / f"lightgbm_{args.dataset}{tag}_raw.parquet"
     rows.to_parquet(out_path, index=False)
     meta = {"model": "lightgbm", "dataset": args.dataset, "mask_stockout": False,
-            "cutoff_date": None, "quantiles": QUANTILES, "horizon": HORIZON,
+            "cutoff_date": args.cutoff_date, "quantiles": QUANTILES, "horizon": HORIZON,
             "n_series": rows.groupby(KEY).ngroups, "n_origins": len(train_origins),
             "num_boost_round": args.num_boost_round, "seed": 0,
             "objectives": ["tweedie", "quantile"]}

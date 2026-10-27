@@ -1,0 +1,4 @@
+pipeline,wall_seconds,ok,hardware,workload
+classical_5models_fit_forecast,205,True,"CPU 22 threads, Intel64 Family 6 Model 170 Stepping 4, GenuineIntel","LT official origin, 10,000 series, h=7"
+empirical_quantile_calibration_5models,261,True,"CPU 22 threads, Intel64 Family 6 Model 170 Stepping 4, GenuineIntel","LT official origin, 10,000 series, h=7"
+lightgbm_tweedie_plus_9quantiles,743,True,"CPU 22 threads, Intel64 Family 6 Model 170 Stepping 4, GenuineIntel","LT official origin, 10,000 series, h=7"

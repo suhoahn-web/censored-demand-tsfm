@@ -29,6 +29,7 @@
 | Croston          | Statistical       |  33.22 |  0.917 | 0.3322 | 0.411  |  -6.48 |
 | ETS+EQ           | Statistical       |  33.49 |  0.933 | 0.2674 | 0.3308 |   5.48 |
 | SBA              | Statistical       |  33.91 |  0.927 | 0.3391 | 0.4195 | -11.16 |
+| TTM+EQ           | TSFM (zero-shot)  |  34.19 |  0.943 | 0.2712 | 0.3355 |   2.3  |
 | TTM              | TSFM (zero-shot)  |  37.57 |  1.033 | 0.3757 | 0.4648 |  13.39 |
 | sNaive           | Statistical       |  38.91 |  1.095 | 0.3891 | 0.4813 |  -0.77 |
 | sNaive+EQ        | Statistical       |  40.87 |  1.149 | 0.3232 | 0.3998 |  10.41 |

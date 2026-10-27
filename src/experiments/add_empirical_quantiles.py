@@ -29,14 +29,19 @@ MODEL_COLS = {"croston": "CrostonClassic", "sba": "CrostonSBA", "tsb": "TSB",
               "ets": "AutoETS", "snaive": "SeasonalNaive"}
 
 
-def validation_errors(dataset: str) -> tuple[pd.DataFrame, pd.Series]:
-    """검증 원점(마지막 −7일)에서의 모델별 오차와 시계열 스케일."""
+def validation_errors(dataset: str, uncensored_only: bool = False
+                      ) -> tuple[pd.DataFrame, pd.Series]:
+    """검증 원점(마지막 −7일)에서의 모델별 오차와 시계열 스케일.
+
+    uncensored_only=True면 검증창에서 품절시간이 0인 날의 잔차만 쓴다
+    (JORS R1 Major 5: 기본 절차는 검열일 잔차를 포함한다 — LT 검증창 품절일 49%).
+    """
     from statsforecast import StatsForecast
     from statsforecast.models import (TSB, AutoETS, CrostonClassic, CrostonSBA,
                                       SeasonalNaive)
 
     train = pd.read_parquet(PROCESSED / f"{dataset}_daily_train.parquet",
-                            columns=KEY + ["dt", "sale_amount"])
+                            columns=KEY + ["dt", "sale_amount", "stock_hour6_22_cnt"])
     eval_keys = (pd.read_parquet(PROCESSED / f"{dataset}_daily_eval.parquet",
                                  columns=KEY).drop_duplicates())
     train = train.merge(eval_keys, on=KEY)
@@ -45,6 +50,11 @@ def validation_errors(dataset: str) -> tuple[pd.DataFrame, pd.Series]:
 
     fit_df = train[train["dt"] <= cutoff].copy()
     holdout = train[train["dt"] > cutoff].copy()
+    if uncensored_only:
+        n0 = len(holdout)
+        holdout = holdout[holdout["stock_hour6_22_cnt"] == 0]
+        print(f"validation residuals restricted to uncensored days: "
+              f"{len(holdout)}/{n0}", flush=True)
     fit_df["unique_id"] = fit_df["store_id"].astype(str) + "_" + fit_df["product_id"].astype(str)
     df = fit_df.rename(columns={"dt": "ds", "sale_amount": "y"})[["unique_id", "ds", "y"]]
 
@@ -71,9 +81,12 @@ def validation_errors(dataset: str) -> tuple[pd.DataFrame, pd.Series]:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--dataset", default="lt", choices=["lt", "frn50k"])
+    ap.add_argument("--uncensored-only", action="store_true",
+                    help="검증 잔차를 품절시간 0인 날로 한정 (출력 접미사 equ)")
     args = ap.parse_args()
+    suffix = "equ" if args.uncensored_only else "eq"
 
-    val, scale = validation_errors(args.dataset)
+    val, scale = validation_errors(args.dataset, args.uncensored_only)
     val = val.join(scale, on=KEY)
     print(f"validation rows: {len(val)}", flush=True)
 
@@ -98,12 +111,17 @@ def main() -> None:
         qcols = [f"q{q}" for q in QUANTILES]
         out[qcols] = np.sort(out[qcols].to_numpy(), axis=1)
 
-        dst = RESULTS / "zeroshot" / f"{short}eq_{args.dataset}_raw.parquet"
+        dst = RESULTS / "zeroshot" / f"{short}{suffix}_{args.dataset}_raw.parquet"
         out.to_parquet(dst, index=False)
-        meta = {"model": f"{short}+empirical-quantiles", "dataset": args.dataset,
+        meta = {"model": f"{short}+empirical-quantiles"
+                         + ("-uncensored" if args.uncensored_only else ""),
+                "dataset": args.dataset,
                 "mask_stockout": False, "cutoff_date": None, "quantiles": QUANTILES,
                 "horizon": HORIZON, "n_series": out.groupby(KEY).ngroups,
-                "quantile_source": "empirical residuals at validation origin (train last -7d)",
+                "quantile_source": "empirical residuals at validation origin (train last -7d)"
+                                   + (", uncensored validation days only"
+                                      if args.uncensored_only else ", all validation days"),
+                "validation_rows": int(len(val)),
                 "scaled_by": "series mean of train sale_amount"}
         Path(str(dst) + ".meta.json").write_text(json.dumps(meta, indent=2))
         print("saved:", dst.name, flush=True)

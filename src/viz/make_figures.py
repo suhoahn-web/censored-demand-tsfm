@@ -44,6 +44,7 @@ SCEN = [("low_margin_waste_dominant", "b = 0.3 (waste-dominant)"),
 
 def load_accuracy(dataset: str) -> pd.DataFrame:
     df = pd.read_csv(RESULTS / "summary_metrics.csv")
+    df = df[~df.run.str.contains("equ_")]
     df = df[(df.eval_filter == "nostock") & (df.dataset == dataset)]
     zs = df[df.adapt == "zero-shot"][["run", "wape", "wpe", "wql"]]
     ft = df[(df.adapt != "zero-shot") & (df["seed"] == 0)].copy()
@@ -55,6 +56,7 @@ def load_accuracy(dataset: str) -> pd.DataFrame:
 
 def fig1_accuracy_vs_cost(dataset: str) -> None:
     inv = pd.read_csv(RESULTS / f"inventory_{dataset}_sl2_L0.csv")
+    inv = inv[~inv.run.str.contains("equ_")]
     # 본문 §5.4와 동일하게 시나리오별 고정 CR에서 비교 (테스트셋 튜닝 없음)
     best = inv[inv["is_fixed_cr"]]
     acc = load_accuracy(dataset)
@@ -131,6 +133,7 @@ def fig2_mcb(dataset: str) -> None:
 
 def fig3_censoring_factorial() -> None:
     df = pd.read_csv(RESULTS / "summary_metrics.csv")
+    df = df[~df.run.str.contains("equ_")]
     df = df[(df.eval_filter == "nostock")]
     rows = []
     pairs = [("chronos2_50k_raw", "chronos2_50krec_raw", "Chronos-2 (ZS)"),
@@ -174,6 +177,7 @@ def fig3_censoring_factorial() -> None:
 
 def fig4_tradeoff(dataset: str) -> None:
     inv = pd.read_csv(RESULTS / f"inventory_{dataset}_sl2_L0.csv")
+    inv = inv[~inv.run.str.contains("equ_")]
     inv = inv[inv.scenario == "medium_margin"]
     show = [r for r in inv["run"].unique()
             if any(k in r for k in ["chronos2_lt_raw", "lora_r16_lr1e-3", "lightgbm",

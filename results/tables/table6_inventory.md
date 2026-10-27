@@ -19,6 +19,7 @@
 | TiRex + mask          | TSFM (zero-shot)  |    0.0747 |    0.1214 |    0.1496 | 0.983               |
 | TSB+EQ                | Statistical       |    0.0566 |    0.0997 |    0.1524 | 0.973               |
 | Croston+EQ            | Statistical       |    0.0569 |    0.1    |    0.1524 | 0.973               |
+| TTM+EQ                | TSFM (zero-shot)  |    0.0615 |    0.1056 |    0.1547 | 0.974               |
 | SBA+EQ                | Statistical       |    0.0573 |    0.1016 |    0.1554 | 0.973               |
 | Moirai-2 + mask       | TSFM (zero-shot)  |    0.0822 |    0.1446 |    0.1752 | 0.967               |
 | TimesFM + mask        | TSFM (zero-shot)  |    0.0743 |    0.1356 |    0.1908 | 0.957               |

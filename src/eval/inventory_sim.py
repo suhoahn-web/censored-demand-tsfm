@@ -60,13 +60,95 @@ def order_at_cr(pred: pd.DataFrame, cr: float) -> np.ndarray | None:
     return np.clip((1 - w) * pred[f"q{l0}"].to_numpy() + w * pred[f"q{l1}"].to_numpy(), 0, None)
 
 
+def quantile_matrix(pred_sorted: pd.DataFrame, index: pd.MultiIndex
+                    ) -> tuple[np.ndarray, np.ndarray]:
+    """예측 테이블 → (levels, Q[n, T, K]) 분위수 격자 (series × horizon × level)."""
+    levels = np.array(sorted(float(c[1:]) for c in pred_sorted.columns
+                             if c.startswith("q")))
+    mats = []
+    for q in levels:
+        w = (pred_sorted[KEY + ["h", f"q{q}"]]
+             .pivot_table(index=KEY, columns="h", values=f"q{q}")
+             .reindex(index))
+        mats.append(np.clip(w.to_numpy(), 0, None))
+    Q = np.stack(mats, axis=-1)
+    Q = np.sort(Q, axis=-1)  # 분위수 교차 방지
+    return levels, Q
+
+
+def protection_levels(levels: np.ndarray, Q: np.ndarray, q: float, lead_time: int,
+                      method: str = "independent", n_draws: int = 400,
+                      seed: int = 0) -> np.ndarray:
+    """L>0에서의 order-up-to 수준: 보호구간 t..t+L 누적수요의 q-분위수 근사 (n, T).
+
+    일별 한계분위수만 있으므로 합의 분위수는 종속구조 가정이 필요하다.
+      "comonotone"  — 일별 q-분위수의 합 (완전 양의 종속; 합 분위수의 상한, 버퍼 과다)
+      "independent" — 일별 한계분포(분위수 격자의 선형보간 역CDF)에서 독립 추출한
+                      합의 경험적 q-분위수 (Monte Carlo, 격자 밖은 최외곽 분위수로 절단)
+    구간이 평가창을 넘으면 평가창 안의 날만 포함한다.
+    """
+    n, T, K = Q.shape
+    out = np.zeros((n, T))
+    if method == "comonotone":
+        Qq = np.stack([_interp_level(levels, Q[:, t, :], q) for t in range(T)], axis=1)
+        for t in range(T):
+            out[:, t] = Qq[:, t:min(t + lead_time, T - 1) + 1].sum(axis=1)
+        return out
+    if method != "independent":
+        raise ValueError(method)
+    rng = np.random.default_rng(seed)
+    rows = np.arange(n)[:, None]
+    samples = np.zeros((n, T, n_draws))
+    for t in range(T):
+        u = rng.random((n, n_draws))
+        k = np.clip(np.searchsorted(levels, u) - 1, 0, K - 2)
+        w = (u - levels[k]) / (levels[k + 1] - levels[k])
+        v = Q[rows, t, k] * (1 - w) + Q[rows, t, k + 1] * w
+        v = np.where(u < levels[0], Q[:, t, 0][:, None], v)
+        v = np.where(u > levels[-1], Q[:, t, -1][:, None], v)
+        samples[:, t, :] = v
+    for t in range(T):
+        s = samples[:, t:min(t + lead_time, T - 1) + 1, :].sum(axis=1)
+        out[:, t] = np.quantile(s, q, axis=1)
+    return np.clip(out, 0, None)
+
+
+def _interp_level(levels: np.ndarray, Qt: np.ndarray, q: float) -> np.ndarray:
+    """(n, K) 격자에서 수준 q의 분위수를 선형보간 (격자 밖은 최외곽)."""
+    if q <= levels[0]:
+        return Qt[:, 0]
+    if q >= levels[-1]:
+        return Qt[:, -1]
+    k = np.searchsorted(levels, q) - 1
+    w = (q - levels[k]) / (levels[k + 1] - levels[k])
+    return Qt[:, k] * (1 - w) + Qt[:, k + 1] * w
+
+
 def simulate(demand: np.ndarray, target: np.ndarray, shelf_life: int,
-             lead_time: int, burn_in: int = BURN_IN) -> dict:
+             lead_time: int, burn_in: int = BURN_IN,
+             lead_target: str = "protection", terminal: str = "ignore") -> dict:
     """(n_series, 7) 수요·발주점 → 다기간 lost-sales + 유통기한 시뮬레이션.
 
     재고는 (잔여수명별) 벡터로 관리하고 FIFO로 소진, 수명 만료분은 폐기.
+
+    일별 순서: (1) 리드타임 경과 발주분 입고 → (2) 재고포지션 검토·발주 →
+    (3) 수요 충족(FIFO) → (4) 보유비용·노화·만료 폐기. 예측은 origin에서 1회
+    생성되며(h=1..7) 일별 재예측은 없다.
+
+    lead_target: L>0일 때 발주목표(order-up-to level)의 정의.
+      "protection" — target을 이미 보호구간 t..t+L 수준으로 계산해 넘긴 경우
+                     (`protection_levels` 참조; 코모노톤 합 또는 독립 합 근사).
+                     그대로 target[:, t]를 쓴다.
+      "same-day"   — 당일 t의 분위수 하나 (2026-08 민감도 실행의 레거시 설정:
+                     보호구간을 L일만큼 과소평가한다; 재현용으로만 유지).
+    terminal: 평가창 종료 시 잔여 재고 처리. "ignore"(무정산, 기존) 또는
+      "waste"(전량 폐기로 계상).
     """
     n, t_max = demand.shape
+    if lead_target not in ("protection", "same-day"):
+        raise ValueError(lead_target)
+    if terminal not in ("ignore", "waste"):
+        raise ValueError(terminal)
     # inv[:, a] = 잔여수명 a+1일인 재고량
     inv = np.zeros((n, shelf_life))
     pipeline = np.zeros((n, max(lead_time, 1)))  # 미도착 발주
@@ -116,8 +198,12 @@ def simulate(demand: np.ndarray, target: np.ndarray, shelf_life: int,
         inv[:, :-1] = inv[:, 1:]
         inv[:, -1] = 0.0
 
+    terminal_inv = inv.sum(axis=1) + pipeline.sum(axis=1)
+    if terminal == "waste":
+        tot_waste += terminal_inv
     return {"sales": tot_sales, "lost": tot_lost, "waste": tot_waste,
-            "hold": tot_hold, "ordered": tot_orders, "n_orders": n_order_events}
+            "hold": tot_hold, "ordered": tot_orders, "n_orders": n_order_events,
+            "terminal_inv": terminal_inv}
 
 
 def collect_predictions(dataset: str):
@@ -132,6 +218,8 @@ def collect_predictions(dataset: str):
             continue
         if re.search(r"_s\d+_raw$", name):
             continue  # 시드 복제본은 Table 7 집계 전용  # 맥락길이 ablation은 본 분석 제외
+        if re.search(r"equ_", name):
+            continue  # EQ 비검열-잔차 변형(JORS R1 E4)은 별도 비교 스크립트에서만 사용
         items.append((name, pd.read_parquet(str(meta_path).replace(".meta.json", ""))))
     ft = RESULTS / "finetune_v2"
     if ft.exists():
@@ -153,6 +241,12 @@ def main() -> None:
     ap.add_argument("--lead-time", type=int, default=0)
     ap.add_argument("--clean-only", action="store_true",
                     help="평가 주간에 품절이 전혀 없는 시계열만 (검열 없는 부분표본)")
+    ap.add_argument("--lead-target", default="independent",
+                    choices=["independent", "comonotone", "same-day"],
+                    help="L>0 발주목표: 보호구간 합의 분위수(독립/코모노톤 근사) "
+                         "또는 당일 분위수(legacy)")
+    ap.add_argument("--terminal", default="ignore", choices=["ignore", "waste"],
+                    help="평가창 종료 시 잔여 재고: 무정산 / 전량 폐기 계상")
     args = ap.parse_args()
 
     truth = pd.read_parquet(PROCESSED / f"{TRUTH_OF.get(args.dataset, args.dataset)}_daily_eval.parquet",
@@ -170,18 +264,39 @@ def main() -> None:
 
     rows = []
     for name, pred in collect_predictions(args.dataset):
-        p = pred.set_index(KEY + ["h"]).sort_index()
+        ps = pred.sort_values(KEY + ["h"])
+        levels = Q = None
+        if args.lead_time > 0 and args.lead_target != "same-day":
+            levels, Q = quantile_matrix(ps, dwide.index)
+            if np.isnan(Q).any():
+                print(f"  skip (incomplete): {name}", flush=True)
+                continue
         for cr in CRS:
-            flat = order_at_cr(pred.sort_values(KEY + ["h"]), cr)
+            flat = order_at_cr(ps, cr)
             if flat is None:
                 continue
-            keys_sorted = pred.sort_values(KEY + ["h"])[KEY + ["h"]]
-            tgt = (keys_sorted.assign(v=flat)
-                   .pivot_table(index=KEY, columns="h", values="v")
-                   .reindex(dwide.index))
-            if tgt.isna().any().any():
-                continue
-            r = simulate(demand, tgt.to_numpy(), args.shelf_life, args.lead_time)
+            if Q is not None:
+                # 점예측 전용(격자 1개)은 보호구간 분위수를 만들 수 없다 → 중앙값만
+                if len(levels) < 3 and abs(cr - 0.5) > 1e-9:
+                    continue
+                if len(levels) < 3:
+                    tgt_arr = np.stack([Q[:, t:min(t + args.lead_time, HORIZON - 1) + 1, 0]
+                                        .sum(axis=1) for t in range(HORIZON)], axis=1)
+                else:
+                    tgt_arr = protection_levels(levels, Q, cr, args.lead_time,
+                                                method=args.lead_target)
+                sim_target = "protection"
+            else:
+                keys_sorted = ps[KEY + ["h"]]
+                tgt = (keys_sorted.assign(v=flat)
+                       .pivot_table(index=KEY, columns="h", values="v")
+                       .reindex(dwide.index))
+                if tgt.isna().any().any():
+                    continue
+                tgt_arr = tgt.to_numpy()
+                sim_target = "same-day"
+            r = simulate(demand, tgt_arr, args.shelf_life, args.lead_time,
+                         lead_target=sim_target, terminal=args.terminal)
             tot_d = demand[:, BURN_IN:].sum()
             for sc, c in SCENARIOS.items():
                 cost = (r["waste"].sum() * 1.0 + r["lost"].sum() * c["b"]
@@ -196,11 +311,17 @@ def main() -> None:
                     "waste_rate": float(r["waste"].sum() / max(r["ordered"].sum(), 1e-9)),
                     "avg_inventory": float(r["hold"].sum() / (len(demand) * (HORIZON - BURN_IN))),
                     "lost_rate": float(r["lost"].sum() / tot_d),
+                    "terminal_inv_per_unit_demand": float(r["terminal_inv"].sum() / tot_d),
                 })
         print(f"  simulated: {name}", flush=True)
 
     df = pd.DataFrame(rows)
     tag = f"{args.dataset}{'_clean' if args.clean_only else ''}_sl{args.shelf_life}_L{args.lead_time}"
+    if args.lead_time > 0:
+        tag += {"same-day": "_sameday", "comonotone": "_comon",
+                "independent": "_indep"}[args.lead_target]
+    if args.terminal == "waste":
+        tag += "_termwaste"
     out = RESULTS / f"inventory_{tag}.csv"
     df.to_csv(out, index=False)
 

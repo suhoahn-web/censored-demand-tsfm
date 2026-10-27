@@ -35,12 +35,19 @@ def main() -> None:
     ap.add_argument("--mask-stockout", action="store_true")
     ap.add_argument("--limit", type=int, default=None, help="파일럿용 시계열 제한")
     ap.add_argument("--out", required=True, help="출력 디렉토리 (results/finetune/...)")
+    ap.add_argument("--cutoff-date", default=None,
+                    help="(R1 E2) origin별 재학습: 컨텍스트를 이 날짜까지로 자르고 다음 7일을 예측")
+    ap.add_argument("--min-context-days", type=int, default=None,
+                    help="(R1 E2) 이력이 N일 미만인 시계열 제외 (zero-shot origin 실행과 동일 집합)")
+    ap.add_argument("--out-parquet", default=None,
+                    help="(R1 E2) zero-shot 포맷으로 results/zeroshot/<name>.parquet(+meta) 저장")
     args = ap.parse_args()
 
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
 
-    contexts, keys = load_contexts(args.dataset, args.mask_stockout, None, args.limit)
+    contexts, keys = load_contexts(args.dataset, args.mask_stockout, args.cutoff_date,
+                                   args.limit, min_context_days=args.min_context_days)
     print(f"train series: {len(contexts)}", flush=True)
 
     from chronos import Chronos2Pipeline
@@ -90,7 +97,22 @@ def main() -> None:
             "base_checkpoint_hash": checkpoint_hash(PROJECT_ROOT / args.model_path),
             "train_seconds": round(train_sec), "n_series": len(contexts),
             "n_trainable_params": n_trainable, "torch": torch.__version__}
+    meta.update({"cutoff_date": args.cutoff_date, "min_context_days": args.min_context_days})
     (out_dir / "meta.json").write_text(json.dumps(meta, indent=2))
+    if args.out_parquet:  # R1 E2: multi_origin_* 스크립트가 읽는 zero-shot 포맷
+        op = PROJECT_ROOT / args.out_parquet
+        op.parent.mkdir(parents=True, exist_ok=True)
+        rows.to_parquet(op, index=False)
+        zmeta = {"model": f"chronos2-{args.mode}" + (f"-r{args.rank}" if args.mode == "lora" else ""),
+                 "model_path": args.model_path, "checkpoint_hash": meta["base_checkpoint_hash"],
+                 "dataset": args.dataset, "mask_stockout": args.mask_stockout,
+                 "cutoff_date": args.cutoff_date, "min_context_days": args.min_context_days,
+                 "quantiles": QUANTILES, "horizon": HORIZON, "n_series": len(contexts),
+                 "seed": args.seed, "learning_rate": fit_kwargs.get("learning_rate"),
+                 "num_steps": args.num_steps, "train_seconds": round(train_sec),
+                 "torch": torch.__version__}
+        Path(str(op) + ".meta.json").write_text(json.dumps(zmeta, indent=2))
+        print("saved:", op, flush=True)
     print("saved:", out_dir, flush=True)
 
 

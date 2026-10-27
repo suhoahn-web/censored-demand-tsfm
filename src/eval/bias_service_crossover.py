@@ -27,6 +27,7 @@ MIN_N = 12  # 분위수 보유 모델이 적으면 상관 추정 불안정
 
 def load_accuracy(dataset: str) -> pd.DataFrame:
     acc = pd.read_csv(RESULTS / "summary_metrics.csv")
+    acc = acc[~acc.run.str.contains("equ_")]
     acc = acc[(acc.eval_filter == "nostock") & (acc.dataset == dataset)]
     zs = acc[acc.adapt == "zero-shot"][["run", "wape", "wql", "wpe"]]
     ft = acc[(acc.adapt != "zero-shot") & (acc["seed"] == 0)].copy()
@@ -45,6 +46,7 @@ def main() -> None:
     args = ap.parse_args()
 
     inv = pd.read_csv(RESULTS / f"inventory_{args.dataset}_sl2_L0.csv")
+    inv = inv[~inv.run.str.contains("equ_")]
     inv = inv[inv.scenario == args.scenario]
     acc = load_accuracy(args.dataset)
     merged = inv.merge(acc, on="run")

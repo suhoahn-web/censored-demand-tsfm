@@ -42,6 +42,7 @@ def write(name: str, df: pd.DataFrame, caption: str, note: str = "") -> None:
 
 def _acc(dataset: str) -> pd.DataFrame:
     df = pd.read_csv(RESULTS / "summary_metrics.csv")
+    df = df[~df.run.str.contains("equ_")]  # R1: 비검열-잔차 EQ 변형은 부록 B.8 전용
     df = df[(df.eval_filter == "nostock") & (df.dataset == dataset)]
     zs = df[df.adapt == "zero-shot"].copy()
     zs = zs[[not is_ablation(r) for r in zs["run"]]]
@@ -89,6 +90,7 @@ def table2_accuracy() -> None:
 
 def table3_adaptation() -> None:
     df = pd.read_csv(RESULTS / "summary_metrics.csv")
+    df = df[~df.run.str.contains("equ_")]  # R1: 비검열-잔차 EQ 변형은 부록 B.8 전용
     d = df[(df.eval_filter == "nostock") & (df.ver == "v2") & (df.dataset == "lt")].copy()
     if d.empty:
         return
@@ -131,6 +133,7 @@ def table4_inventory() -> None:
     if not f.exists():
         return
     inv = pd.read_csv(f)
+    inv = inv[~inv.run.str.contains("equ_")]
     # 본문 §5.4·Fig.5와 동일: 시나리오별 고정 CR (테스트셋 튜닝 배제)
     best = inv[inv["is_fixed_cr"]]
     best = best[[not is_ablation(r) for r in best["run"]]]
@@ -159,6 +162,7 @@ def table4_inventory() -> None:
 
 def table5_censoring() -> None:
     df = pd.read_csv(RESULTS / "summary_metrics.csv")
+    df = df[~df.run.str.contains("equ_")]  # R1: 비검열-잔차 EQ 변형은 부록 B.8 전용
     d = df[df.eval_filter == "nostock"]
     def stat(runs):
         """단일 실행이면 값 그대로, 시드 복수면 평균(표준편차)."""

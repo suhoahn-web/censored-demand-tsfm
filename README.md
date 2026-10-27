@@ -157,3 +157,14 @@ v1.0.1). Please cite both the software and the accompanying paper:
 
 > Ahn, S. Forecasting for perishable replenishment under demand censoring: an
 > evaluation of time series foundation models. (Under review.)
+
+## 8. Revision 1 (October 2026)
+
+The analyses added for the first-round revision are listed, with the manuscript
+location each one feeds, in `CHANGELOG_R1.md`. The main entry points are
+`src/eval/multi_origin_inventory.py`, `src/eval/synthetic_censoring.py`,
+`src/eval/quantile_losses.py`, `src/eval/forecast_diagnostics.py`,
+`src/eval/eq_uncensored_compare.py` and `src/experiments/add_eq_from_val_preds.py`;
+`scripts/verify_r1_numbers.py` re-derives every number quoted in the revision from
+`results/`. Two corrections to `src/eval/inventory_sim.py` (lead-time target,
+terminal inventory) are documented there as well.

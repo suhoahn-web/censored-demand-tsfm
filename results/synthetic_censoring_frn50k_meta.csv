@@ -1,0 +1,2 @@
+dataset,n_clean_series,censored_day_share,terminal_stockout_share,seeds
+frn50k,5874,0.40982285714285716,0.848505974706842,5

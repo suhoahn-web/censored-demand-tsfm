@@ -23,6 +23,7 @@ RESULTS = PROJECT_ROOT / "results"
 
 def load_accuracy(dataset: str) -> pd.DataFrame:
     df = pd.read_csv(RESULTS / "summary_metrics.csv")
+    df = df[~df.run.str.contains("equ_")]
     df = df[(df.eval_filter == "nostock") & (df.dataset == dataset)]
     zs = df[df.adapt == "zero-shot"][["run", "wape", "wpe", "wql", "crps"]]
     ft = df[(df.adapt != "zero-shot") & (df.get("seed").eq(0))].copy()
@@ -42,6 +43,7 @@ def main() -> None:
 
     inv_file = args.inventory_file or f"inventory_{args.dataset}_sl2_L0.csv"
     inv = pd.read_csv(RESULTS / inv_file)
+    inv = inv[~inv.run.str.contains("equ_")]
     best = inv.loc[inv.groupby(["run", "scenario"])["total_cost"].idxmin()]
     acc = load_accuracy(args.dataset)
 
