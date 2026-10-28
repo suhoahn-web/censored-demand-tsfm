@@ -28,7 +28,7 @@ AUTHOR_BLOCK = (
     "Suho Ahn\n\nSchool of Business and Technology Management, Korea Advanced Institute of "
     "Science and Technology (KAIST), Daejeon, Republic of Korea. E-mail: dkstngh3502@kaist.ac.kr\n\n"
     "Reproduction package: https://github.com/suhoahn-web/censored-demand-tsfm "
-    "(archived at https://doi.org/10.5281/zenodo.21902351).\n\n"
+    "(archived at https://doi.org/10.5281/zenodo.23737981).\n\n"
 )
 
 

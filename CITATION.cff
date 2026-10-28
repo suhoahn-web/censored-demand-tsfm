@@ -16,11 +16,17 @@ authors:
       Science and Technology (KAIST), Daejeon, Republic of Korea
     email: dkstngh3502@kaist.ac.kr
 repository-code: "https://github.com/suhoahn-web/censored-demand-tsfm"
-doi: 10.5281/zenodo.21902351
+doi: 10.5281/zenodo.23737981
 identifiers:
   - type: doi
+    value: 10.5281/zenodo.23737981
+    description: Zenodo archive of release v1.1.0 (revision 1)
+  - type: doi
     value: 10.5281/zenodo.21902351
-    description: Zenodo archive of release v1.0.1 (first submission); v1.1.0 adds the revision-1 analyses
+    description: Zenodo archive of release v1.0.1 (first submission)
+  - type: doi
+    value: 10.5281/zenodo.21898895
+    description: Zenodo concept DOI (all versions)
 abstract: >-
   Reproduction package for a study of time series foundation models applied to
   censored fresh-retail demand. Five pre-trained models are crossed with three
