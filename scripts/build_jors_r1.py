@@ -204,6 +204,7 @@ def main() -> None:
         + "**Table C9.** Computational cost on a common workload.\n\n" + comp + "\n\n" \
         + (REV / "tables" / "table_C10_grid.md").read_text(encoding="utf-8") + "\n"
 
+    app_c = app_c.replace("tune its service level", "tune its ordering quantile")
     decl = (
         "## Disclosure statement\n\nThe author reports there are no competing interests to declare.\n\n"
         "## Funding\n\nThis research did not receive any specific grant from funding agencies in the "
