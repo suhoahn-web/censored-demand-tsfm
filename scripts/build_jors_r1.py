@@ -123,28 +123,27 @@ def main() -> None:
     app_b = app_b.rstrip().rstrip("-").rstrip() + "\n"
 
     # ── 본문 표 삽입 ──
-    acc_rows = table_rows(TAB / "table4_accuracy_lt.md", 10)
+    acc_rows = table_rows(TAB / "table4_accuracy_lt.md", 8)
     results = insert_after(
-        results, "Table 5 reports accuracy on the long-horizon release",
-        f"**Table 5.** Forecast accuracy on FreshRetailNet-LT (official 7-day evaluation, days "
+        results, "Table 4 reports accuracy on the long-horizon release",
+        f"**Table 4.** Forecast accuracy on FreshRetailNet-LT (official 7-day evaluation, days "
         f"without stockouts only). WAPE and WPE in %; WPE < 0 indicates under-forecasting.\n\n{acc_rows}\n\n"
-        f"*C2 = Chronos-2; EQ = empirical residual quantiles added to a point forecaster; mask = "
-        f"stockout hours masked in the input context. Remaining methods are reported in Table C1.*")
+        f"*C2 = Chronos-2; EQ = empirical residual quantiles; mask = stockout days masked. "
+        f"All methods in Table C1.*")
     rec_tab = table_rows(TAB / "table7_censoring.md")
     results = insert_before(
         results, "The locally trained models are means over three seeds",
-        f"**Table 6.** Effect of latent demand recovery on accuracy and bias (FreshRetailNet-50K). "
+        f"**Table 5.** Effect of latent demand recovery on accuracy and bias (FreshRetailNet-50K). "
         f"Models are trained on censored sales versus recovered demand and evaluated against observed "
         f"sales in both cases.\n\n{rec_tab}\n\n*WAPE and WPE in %.*")
-    inv_rows = table_rows(TAB / "table6_inventory.md", 9)
+    inv_rows = table_rows(TAB / "table6_inventory.md", 8)
     results = insert_after(
         results, "reports the outcome and Fig. 5 relates it to forecast accuracy.",
-        f"**Table 7.** Inventory cost per unit of demand under the three prespecified cells "
+        f"**Table 6.** Inventory cost per unit of demand under the three prespecified cells "
         f"(FreshRetailNet-LT, shelf life 2 days, lead time 0, observed-demand path). All methods order "
         f"at the same quantile within a cell (0.5, 0.7 and 0.9 respectively).\n\n{inv_rows}\n\n"
-        f"*Unit purchase cost normalised to 1; b is the unit shortage cost (lost margin). Lower is "
-        f"better. Remaining methods, including point forecasters that can order at the median only, "
-        f"are reported in Table C2.*")
+        f"*Unit purchase cost 1; b is the unit shortage cost. All methods, including point forecasters "
+        f"that order at the median only, in Table C2.*")
 
     # ── 그림 삽입 ──
     body1 = insert_before(body1, "## 2. Related work", fig(
@@ -155,9 +154,9 @@ def main() -> None:
     results = insert_after(results, "TimesFM (13.79) fall", fig(
         2, "fig2_mcb_lt.png",
         "Multiple comparisons with the best on FreshRetailNet-LT: mean rank of per-series MASE over "
-        "10,000 series for the main methods, with critical-distance intervals. Methods whose interval "
-        "lies entirely to the right of the dashed line are significantly worse than the best."))
-    results = insert_after(results, "dominate the aggregate and hide the effect.", fig(
+        "10,000 series, with critical-distance intervals; intervals entirely right of the dashed line "
+        "are significantly worse than the best."))
+    results = insert_after(results, "82% of this dataset, dominate the aggregate.", fig(
         3, "fig4_quadrant_lt.png",
         "Mean rank (lower is better) by demand-pattern quadrant (ADI × CV² classification) for "
         "selected methods; stockout masking shown dashed."))
@@ -165,16 +164,14 @@ def main() -> None:
         4, "fig3_censoring_factorial.png",
         "Effect of latent demand recovery on bias (WPE, left) and accuracy (WAPE, right), 90-day "
         "release: zero-shot Chronos-2, zero-shot Moirai-2 and LoRA-adapted Chronos-2 (seed 0)."))
-    results = insert_after(results, "moving a single position.", fig(
+    results = insert_after(results, "configuration is stable across all three cells.", fig(
         5, "fig5_accuracy_vs_cost_lt.png",
-        "Forecast accuracy (WAPE) against inventory cost per unit of demand in the three prespecified "
-        "cells, observed-demand path. Dashed lines are least-squares fits; τ is the Kendall rank "
-        "correlation (* p < 0.05)."))
+        "WAPE against inventory cost per unit of demand in the three prespecified cells, "
+        "observed-demand path; τ is the Kendall rank correlation (* p < 0.05)."))
     results = insert_after(results, "$\\tau = +0.06$ ($p = 0.74$) to $\\tau = +0.48$ ($p = 0.002$).", fig(
         6, "fig7_bias_crossover_lt.png",
-        "Kendall rank correlation between inventory cost and, respectively, absolute bias (|WPE|) "
-        "and distributional quality (WQL), as the ordering quantile rises from 0.2 to 0.9 at a fixed "
-        "cost ratio (b = 1). Filled markers: p < 0.05."))
+        "Kendall rank correlation of inventory cost with absolute bias (|WPE|) and with distributional "
+        "quality (WQL) as the ordering quantile rises at a fixed cost ratio (b = 1); filled markers p < 0.05."))
     results = insert_after(results, "WPE $-8.59\\% \\to -2.29\\%$).", fig(
         7, "fig6_tradeoff_lt.png",
         "Average inventory against achieved fill rate as the ordering quantile sweeps 0.2–0.95 "
