@@ -96,7 +96,7 @@ for b in sorted(g.b.unique()):
                            f"LightGBM {rk('lightgbm_lt_raw')}, adapted C2 {rk('ft_lora_r16_lr1e-3_s0')}")
     rows.append(rec)
 c10 = pd.DataFrame(rows)
-cap = ("**Table C10.** Cheapest method on the $b \times q$ grid (FreshRetailNet-LT, observed-demand path, "
+cap = (r"**Table C10.** Cheapest method on the $b \times q$ grid (FreshRetailNet-LT, observed-demand path, "
        "shelf life 2, lead time 0): for each lost margin $b$ and ordering quantile $q$, the method with the "
        "lowest simulated inventory cost per unit of demand (in parentheses) and the rank positions of "
        "LightGBM and of the best adapted Chronos-2 configuration (LoRA r16, lr $10^{-3}$) among the 29 methods "
