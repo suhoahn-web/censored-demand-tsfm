@@ -149,7 +149,7 @@ def main() -> None:
     body1 = insert_before(body1, "## 2. Related work", fig(
         1, "fig1_framework.png",
         "Overview of the experimental design. Censored sales enter under three input treatments; "
-        "forecasts from four method families become orders under a fixed-quantile policy, evaluated on "
+        "forecasts from each method family become orders under a fixed-quantile policy, evaluated on "
         "uncensored days by forecast error and, under three demand paths, by inventory cost."))
     results = insert_after(results, "TimesFM (13.79) fall", fig(
         2, "fig2_mcb_lt.png",
@@ -168,7 +168,7 @@ def main() -> None:
         5, "fig5_accuracy_vs_cost_lt.png",
         "WAPE against inventory cost per unit of demand in the three prespecified cells, "
         "observed-demand path; τ is the Kendall rank correlation (* p < 0.05)."))
-    results = insert_after(results, "$\\tau = +0.06$ ($p = 0.74$) to $\\tau = +0.48$ ($p = 0.002$).", fig(
+    results = insert_after(results, "$\\tau = +0.06$ ($p = 0.74$) to $\\tau = +0.51$ ($p = 0.0007$).", fig(
         6, "fig7_bias_crossover_lt.png",
         "Kendall rank correlation of inventory cost with absolute bias (|WPE|) and with distributional "
         "quality (WQL) as the ordering quantile rises at a fixed cost ratio (b = 1); filled markers p < 0.05."))
@@ -179,6 +179,10 @@ def main() -> None:
         "frontier; a point forecaster collapses to one operating point."))
 
     # ── 부록 B 표 ──
+    app_b = insert_after(app_b, "quantiles); plain ETS is cheapest at one origin there.",
+                         (REV / "tables" / "table_B3_origins.md").read_text(encoding="utf-8"))
+    app_b = insert_after(app_b, "quoted in Sections 5.3.2 and\n5.4.",
+                         (REV / "tables" / "table_B4_50k_inventory.md").read_text(encoding="utf-8"))
     app_b = app_b + "\n\n" + (TAB / "r1_B7_synthetic_censoring.md").read_text(encoding="utf-8") \
         + "\n\n" + (TAB / "r1_B8_eq_uncensored.md").read_text(encoding="utf-8") \
         + "\n\n" + (TAB / "r1_B9_demand_paths.md").read_text(encoding="utf-8") + "\n"
@@ -188,14 +192,17 @@ def main() -> None:
     comp = comp.split("\n", 1)[1]  # 머리 H1 제거
     app_c = "## Appendix C. Complete result tables\n\n" \
         + table_full(TAB / "table4_accuracy_lt.md", "Table C1.") + "\n\n" \
-        + table_full(TAB / "table6_inventory.md", "Table C2.") + "\n\n" \
-        + table_full(TAB / "table5_adaptation.md", "Table C3.") + "\n\n" \
+        + re.sub(r"\bnan\b", "–", table_full(TAB / "table6_inventory.md", "Table C2.")) + "\n\n" \
+        + table_full(TAB / "table5_adaptation.md", "Table C3.").replace(
+            "Adaptation strategies for Chronos-2 on FreshRetailNet-LT.",
+            "Adaptation strategies for Chronos-2 on FreshRetailNet-LT (LoRA learning rate $10^{-4}$ unless stated; 1,000 steps).") + "\n\n" \
         + (TAB / "r1_C4_quantile_losses.md").read_text(encoding="utf-8") + "\n\n" \
         + (TAB / "r1_C5_bias_definitions.md").read_text(encoding="utf-8") + "\n\n" \
         + (TAB / "r1_C6_achieved_service.md").read_text(encoding="utf-8") + "\n\n" \
         + (TAB / "r1_C7_mase_weighting.md").read_text(encoding="utf-8") + "\n\n" \
         + (TAB / "r1_C8_coverage.md").read_text(encoding="utf-8") + "\n\n" \
-        + "**Table C9.** Computational cost on a common workload.\n\n" + comp + "\n"
+        + "**Table C9.** Computational cost on a common workload.\n\n" + comp + "\n\n" \
+        + (REV / "tables" / "table_C10_grid.md").read_text(encoding="utf-8") + "\n"
 
     decl = (
         "## Disclosure statement\n\nThe author reports there are no competing interests to declare.\n\n"
@@ -204,8 +211,7 @@ def main() -> None:
         "## Data availability\n\nThe FreshRetailNet datasets are publicly available under CC-BY-4.0 at "
         "https://huggingface.co/datasets/Dingdong-Inc/FreshRetailNet-50K and "
         "https://huggingface.co/datasets/Dingdong-Inc/FreshRetailNet-LT. All code, configurations and "
-        "per-run metadata (checkpoint hashes, seeds, library versions), including the modules added in "
-        "revision, are archived in a public repository with a persistent DOI; the identifier is "
+        "per-run metadata (checkpoint hashes, seeds, library versions) are archived in a public repository with a persistent DOI; the identifier is "
         "withheld for anonymized review and given on the title page.\n\n"
         "## Declaration of generative AI and AI-assisted technologies in the writing process\n\n"
         "During the preparation of this work the author used Claude (Anthropic; Claude Opus 5 and "
@@ -216,6 +222,7 @@ def main() -> None:
         "publication.\n\n")
 
     refs_body = strip_notes(refs)
+    refs_body = re.sub(r"\s*⚠[^\n]*(?:\n(?!\n)[^\n]*)*", "", refs_body)  # 내부 검토 메모 제거
     refs_body = "## References\n\n" + refs_body.replace("## References", "").strip() + "\n"
 
     def assemble(anonymous: bool) -> str:

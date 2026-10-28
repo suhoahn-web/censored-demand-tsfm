@@ -206,7 +206,7 @@ def simulate(demand: np.ndarray, target: np.ndarray, shelf_life: int,
             "terminal_inv": terminal_inv}
 
 
-def collect_predictions(dataset: str):
+def collect_predictions(dataset: str, seeds=(0,)):
     items = []
     zs = RESULTS / "zeroshot"
     for meta_path in sorted(zs.glob("*.meta.json")):
@@ -228,7 +228,7 @@ def collect_predictions(dataset: str):
             if not (mf.exists() and pf.exists()):
                 continue
             meta = json.loads(mf.read_text())
-            if meta["dataset"] != dataset or meta.get("seed") != 0:
+            if meta["dataset"] != dataset or meta.get("seed") not in seeds:
                 continue
             items.append((f"ft_{run_dir.name}", pd.read_parquet(pf)))
     return items
@@ -247,7 +247,10 @@ def main() -> None:
                          "또는 당일 분위수(legacy)")
     ap.add_argument("--terminal", default="ignore", choices=["ignore", "waste"],
                     help="평가창 종료 시 잔여 재고: 무정산 / 전량 폐기 계상")
+    ap.add_argument("--seeds", default="0",
+                    help="(R1) 포함할 파인튜닝 시드, 쉼표 구분 (기본 0; 예: 0,1,2 → 시드별 재고비용)")
     args = ap.parse_args()
+    seeds = tuple(int(x) for x in args.seeds.split(","))
 
     truth = pd.read_parquet(PROCESSED / f"{TRUTH_OF.get(args.dataset, args.dataset)}_daily_eval.parquet",
                             columns=KEY + ["dt", "sale_amount", "stock_hour6_22_cnt"])
@@ -263,7 +266,7 @@ def main() -> None:
     demand = dwide.to_numpy()
 
     rows = []
-    for name, pred in collect_predictions(args.dataset):
+    for name, pred in collect_predictions(args.dataset, seeds):
         ps = pred.sort_values(KEY + ["h"])
         levels = Q = None
         if args.lead_time > 0 and args.lead_target != "same-day":
@@ -322,6 +325,8 @@ def main() -> None:
                 "independent": "_indep"}[args.lead_target]
     if args.terminal == "waste":
         tag += "_termwaste"
+    if seeds != (0,):
+        tag += "_seeds" + "".join(str(x) for x in seeds)
     out = RESULTS / f"inventory_{tag}.csv"
     df.to_csv(out, index=False)
 

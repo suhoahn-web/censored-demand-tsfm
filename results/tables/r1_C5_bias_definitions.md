@@ -1,4 +1,4 @@
-**Table C5.** Signed error of the median forecast (WPE, as in the main text) against the signed error of the mean of the predictive distribution approximated from the quantile grid (trapezoid over the reported levels, outer tails held at the extreme quantiles); LightGBM also with its Tweedie point forecast. FreshRetailNet-LT, uncensored days. Point-only methods have no grid mean.
+**Table C5.** Signed error of the median forecast (WPE, as in the main text) against the signed error of the mean of the predictive distribution approximated from the quantile grid (trapezoid over the reported levels, outer tails held at the extreme quantiles); LightGBM also with its Tweedie point forecast. FreshRetailNet-LT, uncensored days; adapted Chronos-2 configurations are seed 0, whereas Tables C1 and C3 average three seeds. Point-only methods have no grid mean.
 
 | Model | Signed median error (WPE, %) | Signed mean error (grid mean, %) | Median − mean component (pp) | Tweedie mean error (%) |
 |---|---|---|---|---|
@@ -21,6 +21,7 @@
 | sNaive | -4.96 | – | – | – |
 | C2 LoRA r16 (lr 1e-3) | -4.60 | -4.61 | +0.02 | – |
 | ETS | -4.26 | – | – | – |
+| TTM+EQ | -2.84 | -3.19 | +0.35 | – |
 | C2 LoRA r16 + mask | -2.67 | +0.05 | -2.72 | – |
 | SBA+EQ | -2.54 | -2.32 | -0.22 | – |
 | Croston+EQ | -2.29 | -2.49 | +0.19 | – |

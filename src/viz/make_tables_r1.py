@@ -35,6 +35,13 @@ LABEL = {
     "sbaeq_lt_raw": "SBA+EQ", "tsb_lt_raw": "TSB", "tsbeq_lt_raw": "TSB+EQ",
     "ets_lt_raw": "ETS", "etseq_lt_raw": "ETS+EQ", "snaive_lt_raw": "sNaive",
     "snaiveeq_lt_raw": "sNaive+EQ",
+    # 50K release (Table B5 lower panel)
+    "lightgbm_frn50k_raw": "LightGBM", "etseq_frn50k_raw": "ETS+EQ", "crostoneq_frn50k_raw": "Croston+EQ",
+    "tsbeq_frn50k_raw": "TSB+EQ", "sbaeq_frn50k_raw": "SBA+EQ", "snaiveeq_frn50k_raw": "sNaive+EQ",
+    "ttmeq_frn50k_raw": "TTM+EQ", "ft_c2_50k_lora_r16_s0": "C2 LoRA r16",
+    "tirex_50k_raw": "TiRex", "tirex_frn50k_mask": "TiRex + mask", "timesfm_50k_raw": "TimesFM",
+    "timesfm_50k_mask": "TimesFM + mask", "moirai2_50k_raw": "Moirai-2", "moirai2_frn50k_mask": "Moirai-2 + mask",
+    "chronos2_50k_raw": "Chronos-2", "chronos2_frn50k_mask": "Chronos-2 + mask",
 }
 
 
@@ -88,7 +95,7 @@ c5 = c5.sort_values("Signed median error (WPE, %)")
     "**Table C5.** Signed error of the median forecast (WPE, as in the main text) against the signed "
     "error of the mean of the predictive distribution approximated from the quantile grid "
     "(trapezoid over the reported levels, outer tails held at the extreme quantiles); LightGBM also "
-    "with its Tweedie point forecast. FreshRetailNet-LT, uncensored days. Point-only methods have no grid mean.\n\n"
+    "with its Tweedie point forecast. FreshRetailNet-LT, uncensored days; adapted Chronos-2 configurations are seed 0, whereas Tables C1 and C3 average three seeds. Point-only methods have no grid mean.\n\n"
     + md(c5, {c: "{:+.2f}" for c in c5.columns if c != "Model"}), encoding="utf-8")
 
 # ── C6: achieved service ──
@@ -124,7 +131,7 @@ c7["Rank (weighted)"] = c7["MASE (weighted by scored days)"].rank().astype(int)
 c7 = c7.sort_values("MASE (equal weights)")
 (OUT / "r1_C7_mase_weighting.md").write_text(
     "**Table C7.** MASE with every series weighted equally (main text) and weighted by its number "
-    "of uncensored evaluation days (1–7). No series has a zero MASE scale or zero scored days.\n\n"
+    "of uncensored evaluation days (1–7). No series has a zero MASE scale or zero scored days; adapted Chronos-2 configurations are seed 0.\n\n"
     + md(c7, {"MASE (equal weights)": "{:.3f}", "MASE (weighted by scored days)": "{:.3f}",
               "Rank (equal)": "{:.0f}", "Rank (weighted)": "{:.0f}"}), encoding="utf-8")
 
@@ -137,7 +144,7 @@ b8["wape"] *= 100; b8["wpe"] *= 100
 b8.columns = ["Model", "Residuals from", "WAPE %", "WPE %", "WQL", "Cov 0.7", "Cov 0.9",
               "Cost b=1, q=0.7", "Cost b=3, q=0.9"]
 (OUT / "r1_B8_eq_uncensored.md").write_text(
-    "**Table B8.** Empirical quantiles estimated from all validation days (main specification) "
+    "**Table B6.** Empirical quantiles estimated from all validation days (main specification) "
     "against uncensored validation days only (35,472 of 70,000 series-days). FreshRetailNet-LT, "
     "uncensored evaluation days; cost per unit of demand under the observed-demand path.\n\n"
     + md(b8, {"WAPE %": "{:.2f}", "WPE %": "{:+.2f}", "WQL": "{:.4f}", "Cov 0.7": "{:.3f}",
@@ -156,7 +163,7 @@ for ds, name in [("lt", "LT (340 series)"), ("frn50k", "50K (5,874 series)")]:
                  + md(tab, {"Cost vs true demand": "{:.4f}", "Cost vs censored target": "{:.4f}",
                             "Inflation %": "{:.0f}", "Rank (true)": "{:.0f}", "Rank (censored)": "{:.0f}"}))
 (OUT / "r1_B7_synthetic_censoring.md").write_text(
-    "**Table B7.** Controlled censoring of the evaluation target on fully observed series: inventory "
+    "**Table B5.** Controlled censoring of the evaluation target on fully observed series: inventory "
     "cost per unit of demand when the same forecasts are scored against true demand and against "
     "synthetically censored sales.\n\n" + "\n\n".join(parts), encoding="utf-8")
 
@@ -174,7 +181,7 @@ for run, g in d.groupby("run"):
     rows.append(rec)
 b9 = pd.DataFrame(rows).sort_values("b=3.0, q=0.9: observed")
 (OUT / "r1_B9_demand_paths.md").write_text(
-    "**Table B9.** Inventory cost per unit of demand under the three evaluation demand paths "
+    "**Table B7.** Inventory cost per unit of demand under the three evaluation demand paths "
     "(observed sales; hour-proportional uplift; the 340 stockout-free series) at the three "
     "prespecified cells, FreshRetailNet-LT, shelf life 2, lead time 0. Point-only methods appear "
     "at the median cell only. Sorted by observed-path cost at b = 3, q = 0.9.\n\n"

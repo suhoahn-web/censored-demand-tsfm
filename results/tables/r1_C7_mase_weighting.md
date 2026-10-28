@@ -1,4 +1,4 @@
-**Table C7.** MASE with every series weighted equally (main text) and weighted by its number of uncensored evaluation days (1–7). No series has a zero MASE scale or zero scored days.
+**Table C7.** MASE with every series weighted equally (main text) and weighted by its number of uncensored evaluation days (1–7). No series has a zero MASE scale or zero scored days; adapted Chronos-2 configurations are seed 0.
 
 | Model | MASE (equal weights) | MASE (weighted by scored days) | Rank (equal) | Rank (weighted) |
 |---|---|---|---|---|
@@ -19,14 +19,15 @@
 | C2 LoRA r16 + mask | 0.898 | 0.881 | 15 | 14 |
 | Moirai-2 | 0.901 | 0.889 | 16 | 16 |
 | TiRex | 0.908 | 0.893 | 17 | 17 |
-| Croston | 0.947 | 0.922 | 18 | 18 |
-| TSB | 0.947 | 0.923 | 19 | 19 |
-| TiRex + mask | 0.964 | 0.938 | 20 | 20 |
-| SBA | 0.967 | 0.941 | 21 | 22 |
-| Chronos-2 + mask | 0.973 | 0.940 | 22 | 21 |
-| TTM | 1.019 | 0.990 | 23 | 23 |
-| TimesFM + mask | 1.040 | 1.000 | 24 | 24 |
-| Moirai-2 + mask | 1.054 | 1.021 | 25 | 25 |
-| sNaive | 1.125 | 1.129 | 26 | 26 |
-| sNaive+EQ | 1.143 | 1.146 | 27 | 27 |
-| TTM + mask | 1.451 | 1.365 | 28 | 28 |
+| TTM+EQ | 0.940 | 0.924 | 18 | 20 |
+| Croston | 0.947 | 0.922 | 19 | 18 |
+| TSB | 0.947 | 0.923 | 20 | 19 |
+| TiRex + mask | 0.964 | 0.938 | 21 | 21 |
+| SBA | 0.967 | 0.941 | 22 | 23 |
+| Chronos-2 + mask | 0.973 | 0.940 | 23 | 22 |
+| TTM | 1.019 | 0.990 | 24 | 24 |
+| TimesFM + mask | 1.040 | 1.000 | 25 | 25 |
+| Moirai-2 + mask | 1.054 | 1.021 | 26 | 26 |
+| sNaive | 1.125 | 1.129 | 27 | 27 |
+| sNaive+EQ | 1.143 | 1.146 | 28 | 28 |
+| TTM + mask | 1.451 | 1.365 | 29 | 29 |

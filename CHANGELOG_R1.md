@@ -63,3 +63,12 @@ docstrings.
   The claim that only Chronos-2 offered fine-tuning support is withdrawn.
 - §5.4: "no artefact of the censored target" is withdrawn.
 - Appendix B.5: the one-day lead-time result is replaced (see above).
+
+## 2026-10-29 — second referee-style pass before resubmission
+
+- Appendix A rebuilt checkpoint by checkpoint in the manuscript source (the response letter had described this rewrite, but the submitted text was still in the build); erroneous cutoff sentence removed.
+- `src/eval/inventory_sim.py --seeds 0,1,2`: seed-level inventory cost for adapted Chronos-2 (results/inventory_lt_sl2_L0_seeds012.csv; SD 0.0001–0.0008 per unit of demand).
+- `src/eval/forecast_property_regimes.py --demand-path clean` and `cost_q_grid.py --demand-path clean`: property-regime correlations on the stockout-free subsample (results/property_regimes_lt_clean.csv).
+- `scripts/make_tables_r1_extra.py`: Table B3 (per-origin accuracy, correlations, cheapest method), Table B4 (50K inventory, censored vs recovered), Table C10 (cheapest method on the b × q grid).
+- Tables C4–C8 and the synthetic-censoring table regenerated with TTM+EQ included (LT Spearman 0.71 → 0.75; 50K 0.79 → 0.76); Appendix B tables renumbered B5 (synthetic censoring), B6 (EQ uncensored), B7 (demand paths).
+- `scripts/verify_r1_numbers.py`: 102 checks (was 77).

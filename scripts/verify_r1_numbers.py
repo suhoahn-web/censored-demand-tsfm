@@ -83,12 +83,12 @@ chk("LT masked C2 rank true", int(g3[g3.run == "chronos2_lt_mask"].rank_true.ilo
 chk("LT masked C2 rank censored", int(g3[g3.run == "chronos2_lt_mask"].rank_censored.iloc[0]), 11)
 chk("LT LightGBM rank true", int(g3[g3.run == "lightgbm_lt_raw"].rank_true.iloc[0]), 15)
 chk("LT LightGBM rank censored", int(g3[g3.run == "lightgbm_lt_raw"].rank_censored.iloc[0]), 2)
-chk("LT Spearman true-censored", round(spearmanr(g3["true"], g3["censored"]).correlation, 2), 0.71, 0.011)
+chk("LT Spearman true-censored", round(spearmanr(g3["true"], g3["censored"]).correlation, 2), 0.75, 0.011)
 chk("LT inflation min %", int(round(g3.delta_pct.min())), 25, 1); chk("LT inflation max %", int(round(g3.delta_pct.max())), 107, 1)
 g5 = pd.read_csv(R / "synthetic_censoring_frn50k_summary.csv"); g53 = g5[np.isclose(g5.b, 3.0)]
-chk("50K Spearman", round(spearmanr(g53["true"], g53["censored"]).correlation, 2), 0.79, 0.011)
-chk("50K ETS+EQ rank censored", int(g53[g53.run == "etseq_frn50k_raw"].rank_censored.iloc[0]), 8)
-chk("50K LoRA rank censored", int(g53[g53.run == "ft_c2_50k_lora_r16_s0"].rank_censored.iloc[0]), 10)
+chk("50K Spearman", round(spearmanr(g53["true"], g53["censored"]).correlation, 2), 0.76, 0.011)
+chk("50K ETS+EQ rank censored", int(g53[g53.run == "etseq_frn50k_raw"].rank_censored.iloc[0]), 9)
+chk("50K LoRA rank censored", int(g53[g53.run == "ft_c2_50k_lora_r16_s0"].rank_censored.iloc[0]), 11)
 meta = pd.read_csv(R / "synthetic_censoring_lt_meta.csv").iloc[0]
 chk("LT terminal stockout share", round(meta.terminal_stockout_share, 2), 0.86, 0.011)
 chk("LT censored-day share", round(meta.censored_day_share, 2), 0.49, 0.011)
@@ -149,6 +149,58 @@ mn = pd.read_csv(R / "recovery_mnar_validation_rates.csv").set_index("missing_ra
 chk("MNAR 0.1 WAPE %", round(100 * mn.loc[0.1, "wape"], 1), 25.5); chk("MNAR 0.5 WAPE %", round(100 * mn.loc[0.5, "wape"], 1), 29.8)
 chk("MNAR 0.1 WPE %", round(100 * mn.loc[0.1, "wpe"], 1), 2.7); chk("MNAR 0.5 WPE %", round(100 * mn.loc[0.5, "wpe"], 1), 2.9)
 chk("MNAR 0.5 hours (M)", round(mn.loc[0.5, "masked_hours"] / 1e6, 1), 16.9)
+
+
+# ── second pass: grid axes (Table C10, §5.4) ──
+gg = pd.read_csv(R / "cost_q_grid_lt_sl2_L0.csv"); gg = gg[~gg.run.str.contains("equ_")]
+def cheapest(b, q):
+    x = gg[np.isclose(gg.b, b) & np.isclose(gg.q, q)].sort_values("cost_per_unit_demand")
+    return x.run.iloc[0]
+chk("grid q=0.7 b=0.75 cheapest", cheapest(0.75, 0.7), "lightgbm_lt_raw")
+chk("grid q=0.7 b=1.0 cheapest", cheapest(1.0, 0.7), "ft_lora_r16_lr1e-3_s0")
+chk("grid b=1 q=0.5 cheapest", cheapest(1.0, 0.5), "etseq_lt_raw")
+chk("grid b=1 q=0.4 cheapest", cheapest(1.0, 0.4), "tsbeq_lt_raw")
+chk("grid b=1 q=0.6 cheapest", cheapest(1.0, 0.6), "lightgbm_lt_raw")
+chk("grid b=1 q=0.8 cheapest", cheapest(1.0, 0.8), "ft_lora_r16_lr1e-3_s0")
+chk("grid b=1 q=0.9 cheapest", cheapest(1.0, 0.9), "lightgbm_lt_raw")
+x = gg[np.isclose(gg.b, 0.3) & np.isclose(gg.q, 0.5)].sort_values("cost_per_unit_demand").reset_index(drop=True)
+chk("TiRex rank b=0.3 q=0.5", int(x.index[x.run == "tirex_lt_raw"][0]) + 1, 16)
+x = gg[np.isclose(gg.b, 3.0) & np.isclose(gg.q, 0.9)].sort_values("cost_per_unit_demand").reset_index(drop=True)
+chk("TiRex rank b=3 q=0.9", int(x.index[x.run == "tirex_lt_raw"][0]) + 1, 4)
+
+# ── second pass: clean-path regimes (§5.8) ──
+pc = pd.read_csv(R / "property_regimes_lt_clean.csv"); pc = pc[np.isclose(pc.b, 1.0)].set_index("q")
+chk("clean tau |WPE| q=0.2", round(pc.loc[0.2, "tau_abs_wpe"], 2), 0.71, 0.011)
+chk("clean tau |WPE| q=0.9", round(pc.loc[0.9, "tau_abs_wpe"], 2), -0.36, 0.011)
+chk("clean tau WQL q=0.2", round(pc.loc[0.2, "tau_wql"], 2), -0.26, 0.011)
+chk("clean tau WQL q=0.9", round(pc.loc[0.9, "tau_wql"], 2), 0.52, 0.011)
+
+# ── second pass: seed SD of inventory cost (B.1) ──
+sx = pd.read_csv(R / "inventory_lt_sl2_L0_seeds012.csv"); sx = sx[sx.is_fixed_cr & sx.run.str.startswith("ft_")]
+sx["cfg"] = sx.run.str.replace(r"_s\d$", "", regex=True)
+sd = sx.groupby(["cfg", "scenario"]).cost_per_unit_demand.std().dropna()
+chk("seed SD min", round(sd.min(), 4), 0.0001, 0.00005); chk("seed SD max", round(sd.max(), 4), 0.0008, 0.00005)
+
+# ── second pass: origin LightGBM co-movement (B.2) ──
+mo = pd.read_csv(R / "multi_origin_lt.csv"); w = mo.pivot_table(index="method", columns="origin", values="wape")
+chk("LightGBM-ETS+EQ origin corr", round(np.corrcoef(w.loc["lightgbm_lt_raw"], w.loc["etseq_lt_raw"])[0, 1], 2), 0.89, 0.011)
+chk("LightGBM-C2 origin corr", round(np.corrcoef(w.loc["lightgbm_lt_raw"], w.loc["chronos2_lt_raw"])[0, 1], 2), 0.38, 0.011)
+chk("ETS+EQ origin WAPE max %", round(100 * w.loc["etseq_lt_raw"].max(), 1), 38.1, 0.06)
+
+# ── second pass: 50K recovery effect on cost (§5.3.2, Table B4) ──
+def cells(ds, run):
+    x = pd.read_csv(R / f"inventory_{ds}_sl2_L0.csv"); x = x[x.is_fixed_cr & (x.run == run)]
+    return x.set_index("scenario").cost_per_unit_demand
+lo, rec = cells("frn50k", "ft_c2_50k_lora_r16_s0"), cells("frn50krec", "ft_c2_rec_lora_r16_s0")
+d = (100 * (lo - rec) / lo); chk("50K LoRA recovery gain min %", round(d.min(), 1), 0.8, 0.06); chk("50K LoRA recovery gain max %", round(d.max(), 1), 11.7, 0.06)
+zs = [(cells("frn50k", a), cells("frn50krec", b)) for a, b in [("chronos2_50k_raw", "chronos2_50krec_raw"), ("moirai2_50k_raw", "moirai2_50krec_raw")]]
+dz = pd.concat([100 * (a - b) / a for a, b in zs]); chk("50K zero-shot recovery gain min %", round(dz.min(), 1), 11.5, 0.06); chk("50K zero-shot recovery gain max %", round(dz.max(), 1), 19.6, 0.06)
+
+# ── second pass: B.8 numbers ──
+e2 = pd.read_csv(R / "eq_uncensored_compare_lt.csv").set_index(["model", "variant"])
+chk("B8 WPE uncensored min %", round(100 * min(e2.loc[(m, "equ"), "wpe"] for m in ["croston", "sba", "tsb", "ets", "snaive"]), 1), 1.5, 0.06)
+chk("B8 WPE uncensored max %", round(100 * max(e2.loc[(m, "equ"), "wpe"] for m in ["croston", "sba", "tsb", "ets", "snaive"]), 1), 3.8, 0.06)
+chk("B8 sNaive cost delta b=3", round(e2.loc[("snaive", "equ"), "cost_b3.0_q0.9"] - e2.loc[("snaive", "eq"), "cost_b3.0_q0.9"], 3), 0.024, 0.0006)
 
 n_bad = sum(1 for c in checks if not c[3])
 print(f"\n{len(checks)} checks, {n_bad} mismatches")

@@ -1,4 +1,4 @@
-**Table B9.** Inventory cost per unit of demand under the three evaluation demand paths (observed sales; hour-proportional uplift; the 340 stockout-free series) at the three prespecified cells, FreshRetailNet-LT, shelf life 2, lead time 0. Point-only methods appear at the median cell only. Sorted by observed-path cost at b = 3, q = 0.9.
+**Table B7.** Inventory cost per unit of demand under the three evaluation demand paths (observed sales; hour-proportional uplift; the 340 stockout-free series) at the three prespecified cells, FreshRetailNet-LT, shelf life 2, lead time 0. Point-only methods appear at the median cell only. Sorted by observed-path cost at b = 3, q = 0.9.
 
 | Model | b=0.3, q=0.5: observed | b=0.3, q=0.5: uplift | b=0.3, q=0.5: clean | b=1.0, q=0.7: observed | b=1.0, q=0.7: uplift | b=1.0, q=0.7: clean | b=3.0, q=0.9: observed | b=3.0, q=0.9: uplift | b=3.0, q=0.9: clean |
 |---|---|---|---|---|---|---|---|---|---|

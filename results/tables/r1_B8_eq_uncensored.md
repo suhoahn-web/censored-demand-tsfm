@@ -1,4 +1,4 @@
-**Table B8.** Empirical quantiles estimated from all validation days (main specification) against uncensored validation days only (35,472 of 70,000 series-days). FreshRetailNet-LT, uncensored evaluation days; cost per unit of demand under the observed-demand path.
+**Table B6.** Empirical quantiles estimated from all validation days (main specification) against uncensored validation days only (35,472 of 70,000 series-days). FreshRetailNet-LT, uncensored evaluation days; cost per unit of demand under the observed-demand path.
 
 | Model | Residuals from | WAPE % | WPE % | WQL | Cov 0.7 | Cov 0.9 | Cost b=1, q=0.7 | Cost b=3, q=0.9 |
 |---|---|---|---|---|---|---|---|---|
