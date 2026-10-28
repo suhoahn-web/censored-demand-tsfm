@@ -1,0 +1,15 @@
+{
+  "model": "chronos2",
+  "checkpoint_hash": "6305c8fb21730210",
+  "dataset": "lt",
+  "n_series": 10000,
+  "horizon": 7,
+  "wall_seconds": 11.5,
+  "seconds_per_10k_series": 11.5,
+  "peak_gpu_mem_allocated_GB": 0.86,
+  "peak_gpu_mem_reserved_GB": 0.99,
+  "baseline_allocated_GB": 0.0,
+  "gpu": "NVIDIA A100 80GB PCIe",
+  "torch": "2.10.0+cu128",
+  "batch_size": 256
+}

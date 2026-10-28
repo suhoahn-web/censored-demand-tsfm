@@ -20,7 +20,7 @@ doi: 10.5281/zenodo.21902351
 identifiers:
   - type: doi
     value: 10.5281/zenodo.21902351
-    description: Zenodo archive of release v1.0.1
+    description: Zenodo archive of release v1.0.1 (first submission); v1.1.0 adds the revision-1 analyses
 abstract: >-
   Reproduction package for a study of time series foundation models applied to
   censored fresh-retail demand. Five pre-trained models are crossed with three
@@ -30,7 +30,11 @@ abstract: >-
   and waste, so that methods are compared by inventory cost as well as by
   forecast error. Includes experiment scripts, evaluation metrics, the inventory
   simulator, significance tests, figure and table generators, and per-run
-  metadata recording checkpoint hashes, seeds and library versions.
+  metadata recording checkpoint hashes, seeds and library versions. Version
+  1.1.0 adds the first-round revision analyses (multiple-origin inventory
+  simulation with origin-specific retraining, controlled censoring of the
+  evaluation target, quantile-level losses, diagnostics, TTM with empirical
+  quantiles, corrected lead-time target) documented in CHANGELOG_R1.md.
 keywords:
   - demand forecasting
   - censored demand
@@ -39,4 +43,4 @@ keywords:
   - perishable retail
   - probabilistic forecasting
 license: MIT
-version: 1.0.1
+version: 1.1.0

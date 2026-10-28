@@ -109,14 +109,23 @@ chk("CSL q=0.9 min", round(a9.cycle_service_level.min(), 2), 0.83, 0.006); chk("
 # ── B.2 / Table B2 multi-origin inventory ──
 rk = pd.read_csv(R / "multi_origin_inventory_rank_lt.csv")
 r3 = rk[np.isclose(rk.b, 3.0)].set_index("method")
-chk("TiRex mean rank b=3", round(r3.loc["tirex_lt_raw", "rank_mean"], 1), 1.4, 0.06)
-chk("TiRex top1 freq b=3", round(r3.loc["tirex_lt_raw", "top1_freq"], 3), 0.75, 0.001)
-chk("Chronos-2 mean rank b=3", round(r3.loc["chronos2_lt_raw", "rank_mean"], 1), 2.4, 0.06)
+chk("adapted C2 mean rank b=3", round(r3.loc["c2lora_lt_raw", "rank_mean"], 1), 2.1, 0.06)
+chk("adapted C2 top1 freq b=3", round(r3.loc["c2lora_lt_raw", "top1_freq"], 3), 0.625, 0.001)
+chk("TiRex mean rank b=3", round(r3.loc["tirex_lt_raw", "rank_mean"], 1), 2.4, 0.06)
+chk("TiRex top1 freq b=3", round(r3.loc["tirex_lt_raw", "top1_freq"], 3), 0.25, 0.001)
+chk("Chronos-2 mean rank b=3", round(r3.loc["chronos2_lt_raw", "rank_mean"], 1), 3.5, 0.06)
+chk("LightGBM mean rank b=3", round(r3.loc["lightgbm_lt_raw", "rank_mean"], 1), 3.6, 0.06)
+ms = pd.read_csv(R / "multi_origin_summary_lt.csv").set_index("method")
+chk("adapted C2 WQL rank mean", round(ms.loc["c2lora_lt_raw", "rank_wql_mean"], 2), 1.0)
+chk("adapted C2 WAPE rank mean", round(ms.loc["c2lora_lt_raw", "rank_wape_mean"], 1), 1.5, 0.06)
+chk("LightGBM origin WAPE max %", round(100 * ms.loc["lightgbm_lt_raw", "wape_max"], 1), 36.5, 0.06)
 r1 = rk[np.isclose(rk.b, 1.0)].set_index("method")
 chk("ETS+EQ top1 freq b=1", round(r1.loc["etseq_lt_raw", "top1_freq"], 3), 0.625, 0.001)
 ts = pd.read_csv(R / "multi_origin_tau_signed_lt.csv"); t1 = ts[(ts.path == "observed") & np.isclose(ts.b, 1.0)]
+tt = pd.read_csv(R / "multi_origin_tau_lt.csv"); t1 = tt[(tt.demand_path == "observed") & np.isclose(tt.b, 1.0)]
 chk("origins with tau(WQL,q=0.9)>0", int((t1[np.isclose(t1.q, 0.9)].tau_wql > 0).sum()), 8)
 chk("origins with tau(WPE,q=0.2)<0", int((t1[np.isclose(t1.q, 0.2)].tau_wpe < 0).sum()), 7)
+chk("origins with tau(WPE,q=0.9)>=0", int((t1[np.isclose(t1.q, 0.9)].tau_wpe >= 0).sum()), 6)
 
 # ── B.5 lead time / terminal ──
 def fixed(tag):
@@ -135,6 +144,11 @@ chk("terminal-waste best low", tw[lo].idxmin(), "chronos2_lt_raw")
 cc = pd.read_csv(R / "compute_cost_cpu_lt.csv").set_index("pipeline").wall_seconds
 chk("classical s", int(cc["classical_5models_fit_forecast"]), 205); chk("EQ s", int(cc["empirical_quantile_calibration_5models"]), 261)
 chk("LightGBM s", int(cc["lightgbm_tweedie_plus_9quantiles"]), 743)
+
+mn = pd.read_csv(R / "recovery_mnar_validation_rates.csv").set_index("missing_rate")
+chk("MNAR 0.1 WAPE %", round(100 * mn.loc[0.1, "wape"], 1), 25.5); chk("MNAR 0.5 WAPE %", round(100 * mn.loc[0.5, "wape"], 1), 29.8)
+chk("MNAR 0.1 WPE %", round(100 * mn.loc[0.1, "wpe"], 1), 2.7); chk("MNAR 0.5 WPE %", round(100 * mn.loc[0.5, "wpe"], 1), 2.9)
+chk("MNAR 0.5 hours (M)", round(mn.loc[0.5, "masked_hours"] / 1e6, 1), 16.9)
 
 n_bad = sum(1 for c in checks if not c[3])
 print(f"\n{len(checks)} checks, {n_bad} mismatches")
