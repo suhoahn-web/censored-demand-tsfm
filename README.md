@@ -149,11 +149,11 @@ datasets are distributed by Dingdong-Inc under CC-BY-4.0 and are not
 redistributed here.
 
 This repository is archived on Zenodo:
-**[10.5281/zenodo.23737981](https://doi.org/10.5281/zenodo.23737981)** (release
-v1.1.0; v1.0.1 at [10.5281/zenodo.21902351](https://doi.org/10.5281/zenodo.21902351)). Please cite both the software and the accompanying paper:
+**[10.5281/zenodo.23754720](https://doi.org/10.5281/zenodo.23754720)** (release
+v1.1.1; v1.1.0 at [10.5281/zenodo.23737981](https://doi.org/10.5281/zenodo.23737981); v1.0.1 at [10.5281/zenodo.21902351](https://doi.org/10.5281/zenodo.21902351)). Please cite both the software and the accompanying paper:
 
 > Ahn, S. (2026). *censored-demand-tsfm: reproduction package* [Software].
-> Zenodo. https://doi.org/10.5281/zenodo.23737981
+> Zenodo. https://doi.org/10.5281/zenodo.23754720
 
 > Ahn, S. Forecasting for perishable replenishment under demand censoring: an
 > evaluation of time series foundation models. (Under review.)

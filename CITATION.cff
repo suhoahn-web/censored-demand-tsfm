@@ -16,8 +16,11 @@ authors:
       Science and Technology (KAIST), Daejeon, Republic of Korea
     email: dkstngh3502@kaist.ac.kr
 repository-code: "https://github.com/suhoahn-web/censored-demand-tsfm"
-doi: 10.5281/zenodo.23737981
+doi: 10.5281/zenodo.23754720
 identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23754720
+    description: Zenodo archive of release v1.1.1 (revision 1, second and third pass)
   - type: doi
     value: 10.5281/zenodo.23737981
     description: Zenodo archive of release v1.1.0 (revision 1)
