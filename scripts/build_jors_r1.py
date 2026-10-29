@@ -150,7 +150,7 @@ def main() -> None:
         1, "fig1_framework.png",
         "Overview of the experimental design. Censored sales enter under three input treatments; "
         "forecasts from each method family become orders under a fixed-quantile policy, evaluated on "
-        "uncensored days by forecast error and, under three demand paths, by inventory cost."))
+        "uncensored days by forecast error and, under four demand paths, by inventory cost."))
     results = insert_after(results, "TimesFM (13.79) fall", fig(
         2, "fig2_mcb_lt.png",
         "Multiple comparisons with the best on FreshRetailNet-LT: mean rank of per-series MASE over "

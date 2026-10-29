@@ -74,13 +74,13 @@ def draw() -> None:
     frame(7, 22.5, 89, 12.5, "Decision")
     box(20, 25, 60, 8,
         "Order-up-to replenishment at fixed quantile $q$\n"
-        "(three cost scenarios; shelf life, FIFO issuing, waste)", BLUE)
+        "($b \\times q$ cost grid; shelf life, FIFO issuing, waste)", BLUE)
     chevron(50, 21.7, 18.9)
 
     # 평가
     box(20, 9, 60, 8.5,
-        "Evaluation on uncensored days:\naccuracy, bias, WQL; inventory cost and "
-        "fill rate", GRAY)
+        "Evaluation: accuracy, bias, WQL on uncensored days;\n"
+        "inventory cost and fill rate under four demand paths", GRAY)
 
     fig.tight_layout(pad=0.3)
     savefig(fig, FIGDIR / "fig1_framework.png")
