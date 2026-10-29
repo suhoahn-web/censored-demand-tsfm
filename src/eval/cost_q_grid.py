@@ -41,7 +41,7 @@ def main() -> None:
     ap.add_argument("--lead-time", type=int, default=0)
     ap.add_argument("--clean-only", action="store_true")
     ap.add_argument("--demand-path", default="observed",
-                    choices=["observed", "uplift", "clean"],
+                    choices=["observed", "uplift", "clean", "profile"],
                     help="평가 수요 경로 (P0-5 민감도)")
     args = ap.parse_args()
 

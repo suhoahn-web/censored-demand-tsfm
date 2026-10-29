@@ -68,7 +68,10 @@ def truth_paths(dataset: str, cutoff: str) -> dict[str, pd.DataFrame]:
     upl = t.pivot_table(index=KEY, columns="h", values="uplift").sort_index()
     clean_idx = (t.groupby(KEY)["stock_hour6_22_cnt"].max() == 0)
     clean = obs.loc[clean_idx[clean_idx].index]
-    return {"observed": obs, "uplift": upl, "clean": clean}
+    from src.eval.demand_paths import profile_path_origin
+    prof, _ = profile_path_origin(dataset, cutoff)
+    return {"observed": obs, "uplift": upl, "clean": clean,
+            "profile": prof.reindex(obs.index)}
 
 
 def load_origin_runs(dataset: str) -> dict[str, list[tuple[str, Path]]]:

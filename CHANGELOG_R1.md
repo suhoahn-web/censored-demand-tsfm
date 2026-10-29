@@ -72,3 +72,10 @@ docstrings.
 - `scripts/make_tables_r1_extra.py`: Table B3 (per-origin accuracy, correlations, cheapest method), Table B4 (50K inventory, censored vs recovered), Table C10 (cheapest method on the b × q grid).
 - Tables C4–C8 and the synthetic-censoring table regenerated with TTM+EQ included (LT Spearman 0.71 → 0.75; 50K 0.79 → 0.76); Appendix B tables renumbered B5 (synthetic censoring), B6 (EQ uncensored), B7 (demand paths).
 - `scripts/verify_r1_numbers.py`: 102 checks (was 77).
+
+## 2026-10-29 — third pass: hour-profile demand path and shelf life 3 with lead time 1
+
+- `src/eval/demand_paths.py` (new): *profile* evaluation demand path. A censored day's sales in the in-stock trading hours are divided by the share of the series' hourly demand profile that those hours carry; the profile is estimated on uncensored days of the 90 training days before the origin (series level, with product-level and global fallbacks), whole-day stockouts are replaced by the uncensored mean and the estimate is capped at three times that mean, as for the uplift path. Adds 20% to observed demand (the flat uplift adds 31%). Registered as `--demand-path profile` in `cost_q_grid.py` and `forecast_property_regimes.py`, and added to `demand_target_sensitivity.py` and `multi_origin_inventory.py` (existing paths unchanged, verified to 0.0).
+- Results: `results/demand_target_sensitivity_lt.csv` (four paths), `cost_q_grid_lt_profile_sl2_L0.csv`, `property_regimes_lt_profile.csv`, `multi_origin_inventory_lt.csv` / `multi_origin_tau_lt.csv` (profile rows added). Manuscript: §3.3, §4.5, §5.8, §6.4, B.2, B.7, Tables B3 and B7.
+- `src/eval/inventory_sim.py --shelf-life 3 --lead-time 1` under both protection-interval approximations: `results/inventory_lt_sl3_L1_indep.csv`, `inventory_lt_sl3_L1_comon.csv`; summary script `scripts/analyze_sl3_L1.py`. Manuscript: Appendix B.5, §5.7.
+- `scripts/verify_r1_numbers.py`: 127 checks (was 102).

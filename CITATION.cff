@@ -40,7 +40,9 @@ abstract: >-
   1.1.0 adds the first-round revision analyses (multiple-origin inventory
   simulation with origin-specific retraining, controlled censoring of the
   evaluation target, quantile-level losses, diagnostics, TTM with empirical
-  quantiles, corrected lead-time target) documented in CHANGELOG_R1.md.
+  quantiles, corrected lead-time target) documented in CHANGELOG_R1.md;
+  version 1.1.1 adds the hour-profile demand path, seed-level inventory
+  costs, the shelf life 3 / lead time 1 run and the extra appendix tables.
 keywords:
   - demand forecasting
   - censored demand
@@ -49,4 +51,4 @@ keywords:
   - perishable retail
   - probabilistic forecasting
 license: MIT
-version: 1.1.0
+version: 1.1.1

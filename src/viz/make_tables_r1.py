@@ -175,15 +175,15 @@ rows = []
 for run, g in d.groupby("run"):
     rec = {"Model": lab(run)}
     for b_, q_ in cells:
-        for path in ["observed", "uplift", "clean"]:
+        for path in ["observed", "profile", "uplift", "clean"]:
             gg = g[np.isclose(g.b, b_) & np.isclose(g.q, q_) & (g.demand_path == path)]
             rec[f"b={b_}, q={q_}: {path}"] = float(gg.cost_per_unit_demand.iloc[0]) if len(gg) else np.nan
     rows.append(rec)
 b9 = pd.DataFrame(rows).sort_values("b=3.0, q=0.9: observed")
 (OUT / "r1_B9_demand_paths.md").write_text(
-    "**Table B7.** Inventory cost per unit of demand under the three evaluation demand paths "
-    "(observed sales; hour-proportional uplift; the 340 stockout-free series) at the three "
-    "prespecified cells, FreshRetailNet-LT, shelf life 2, lead time 0. Point-only methods appear "
+    "**Table B7.** Inventory cost per unit of demand under the four evaluation demand paths "
+    "(observed sales; hour-profile correction; hour-proportional uplift; the 340 stockout-free "
+    "series) at the three prespecified cells, FreshRetailNet-LT, shelf life 2, lead time 0. Point-only methods appear "
     "at the median cell only. Sorted by observed-path cost at b = 3, q = 0.9.\n\n"
     + md(b9, {c: "{:.4f}" for c in b9.columns if c != "Model"}), encoding="utf-8")
 

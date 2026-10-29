@@ -10,6 +10,9 @@
             일정하다는 가정하의 단순 상한. s=16(종일 품절)이면 그 시계열의 무품절일
             평균으로 대체하고, 폭주를 막기 위해 무품절일 평균의 3배로 절단한다.
   clean     평가 주간에 품절이 전혀 없던 시계열만 (선택 표본; 검열 없음)
+  profile   (R1) 시계열별 시간대 프로파일 기반 보정: 재고가 있던 영업시간의 판매를
+            그 시간대의 프로파일 질량으로 나눔 (src/eval/demand_paths.py). uplift와
+            observed 사이의 중간 추정.
 
 어느 것도 참값이 아니다. uplift는 추정 잠재수요 민감도 분석이지 정답이 아니다.
 
@@ -65,6 +68,10 @@ def build_paths(dataset: str) -> dict[str, pd.DataFrame]:
     paths["uplift"] = t.pivot_table(index=KEY, columns="h", values="uplift")
     clean_idx = (t.groupby(KEY)["stock_hour6_22_cnt"].max() == 0)
     paths["clean"] = paths["observed"].loc[clean_idx[clean_idx].index]
+    # R1: hour-profile path (series hourly profile from the 90 training days before the origin)
+    from src.eval.demand_paths import profile_path_eval
+    paths["profile"], _ = profile_path_eval(dataset)
+    paths["profile"] = paths["profile"].reindex(paths["observed"].index)
     for k in paths:
         paths[k] = paths[k].sort_index()
     return paths
@@ -121,6 +128,8 @@ def main() -> None:
                 continue
             c = pv.rank().corr(method="spearman")
             print(f"q={q}, b={b}: observed-uplift {c.loc['observed','uplift']:.3f}"
+                  + (f", observed-profile {c.loc['observed','profile']:.3f}"
+                     if "profile" in c.columns else "")
                   + (f", observed-clean {c.loc['observed','clean']:.3f}"
                      if "clean" in c.columns else ""))
 

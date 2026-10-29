@@ -32,6 +32,7 @@ for o in sorted(acc.origin.unique()):
     obs = i3[i3.demand_path == "observed"].sort_values("cost_per_unit_demand")
     piv = i3.pivot(index="method", columns="demand_path", values="cost_per_unit_demand").dropna()
     sp = spearmanr(piv["observed"], piv["uplift"]).correlation
+    spp = spearmanr(piv["observed"], piv["profile"]).correlation
     rows.append({"Origin": o, "Series": f"{int(obs.n_series.iloc[0]):,}",
                  "Adapted C2": f"{100*a.loc['c2lora_lt_raw','wape']:.1f}",
                  "Zero-shot C2": f"{100*a.loc['chronos2_lt_raw','wape']:.1f}",
@@ -42,13 +43,13 @@ for o in sorted(acc.origin.unique()):
                  "τ(WPE), q=0.9": f"{t.loc[0.9,'tau_wpe']:+.2f}",
                  "τ(WQL), q=0.9": f"{t.loc[0.9,'tau_wql']:+.2f}",
                  "Cheapest, b=3, q=0.9": LAB.get(obs.method.iloc[0], obs.method.iloc[0]),
-                 "ρ obs–uplift": f"{sp:+.2f}"})
+                 "ρ obs–profile": f"{spp:+.2f}", "ρ obs–uplift": f"{sp:+.2f}"})
 b3 = pd.DataFrame(rows)
 cap = ("**Table B3.** Eight forecast origins on FreshRetailNet-LT: WAPE (%) of five methods on the series "
        "common to the origin, Kendall correlation of inventory cost with the signed median error (WPE) "
        "and with the weighted quantile loss (WQL) at $b = 1.0$ and the quantile shown, the cheapest "
        "method at $b = 3.0$, $q = 0.9$ (observed-demand path), and the Spearman correlation ρ between "
-       "the observed- and uplift-path cost rankings at that cell. Adapted Chronos-2 is LoRA r16, "
+       "the observed-path cost ranking and the profile- and uplift-path rankings at that cell. Adapted Chronos-2 is LoRA r16, "
        "learning rate $10^{-3}$, seed 0, retrained at each origin; LightGBM is retrained at each origin "
        "with the official-origin recipe.\n\n")
 (OUT / "table_B3_origins.md").write_text(cap + md(b3), encoding="utf-8")

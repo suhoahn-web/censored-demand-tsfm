@@ -202,5 +202,59 @@ chk("B8 WPE uncensored min %", round(100 * min(e2.loc[(m, "equ"), "wpe"] for m i
 chk("B8 WPE uncensored max %", round(100 * max(e2.loc[(m, "equ"), "wpe"] for m in ["croston", "sba", "tsb", "ets", "snaive"]), 1), 3.8, 0.06)
 chk("B8 sNaive cost delta b=3", round(e2.loc[("snaive", "equ"), "cost_b3.0_q0.9"] - e2.loc[("snaive", "eq"), "cost_b3.0_q0.9"], 3), 0.024, 0.0006)
 
+
+# ── third pass: hour-profile demand path (§3.3, §5.8, Table B7) ──
+import sys; sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from src.eval.demand_target_sensitivity import build_paths
+_paths = build_paths("lt")
+_ratio = _paths["profile"].to_numpy().sum() / _paths["observed"].to_numpy().sum()
+chk("profile path demand ratio (20%)", round(100 * (_ratio - 1)), 20)
+chk("uplift path demand ratio (31%)", round(100 * (_paths["uplift"].to_numpy().sum() / _paths["observed"].to_numpy().sum() - 1)), 31)
+pp = pd.read_csv(R / "property_regimes_lt_profile.csv"); pp = pp[np.isclose(pp.b, 1.0)].set_index("q")
+chk("profile tau |WPE| q=0.2", round(pp.loc[0.2, "tau_abs_wpe"], 2), 0.66, 0.011)
+chk("profile tau |WPE| q=0.9", round(pp.loc[0.9, "tau_abs_wpe"], 2), -0.36, 0.011)
+chk("profile tau WQL q=0.2", round(pp.loc[0.2, "tau_wql"], 2), -0.03, 0.011)
+chk("profile tau WQL q=0.9", round(pp.loc[0.9, "tau_wql"], 2), 0.52, 0.011)
+chk("Spearman obs-profile b=3 q=0.9", sp(3.0, 0.9, bb="profile"), 0.82, 0.011)
+_med = [sp(b, 0.5, bb="profile") for b in [0.3, 1.0, 3.0]]
+chk("Spearman obs-profile median min", min(_med), 0.78, 0.011); chk("Spearman obs-profile median max", max(_med), 0.92, 0.011)
+_q7 = [sp(b, 0.7, bb="profile") for b in [0.3, 1.0, 3.0]]
+chk("Spearman obs-profile q=0.7 min", min(_q7), 0.59, 0.011); chk("Spearman obs-profile q=0.7 max", max(_q7), 0.66, 0.011)
+_pr = dt[np.isclose(dt.b, 3.0) & np.isclose(dt.q, 0.9) & (dt.demand_path == "profile")].nsmallest(3, "cost_per_unit_demand").run.tolist()
+chk("cheapest under profile b=3 q=0.9", _pr[0], "ft_lora_r16_lr1e-5_s0")
+chk("second under profile b=3 q=0.9", _pr[1], "tirex_lt_raw")
+chk("third under profile b=3 q=0.9", _pr[2], "ft_lora_r16_lr1e-3_s0")
+
+# ── third pass: profile path across origins (B.2, Table B3) ──
+_mo = pd.read_csv(R / "multi_origin_inventory_lt.csv")
+_i3 = _mo[np.isclose(_mo.b, 3.0) & np.isclose(_mo.q, 0.9)]
+_rho, _best = [], []
+for _o in sorted(_i3.origin.unique()):
+    _x = _i3[_i3.origin == _o].pivot(index="method", columns="demand_path", values="cost_per_unit_demand").dropna()
+    _rho.append(round(spearmanr(_x["observed"], _x["profile"]).correlation, 2)); _best.append(_x["profile"].idxmin())
+chk("origin rho obs-profile min", min(_rho), -0.21, 0.011); chk("origin rho obs-profile max", max(_rho), 0.99, 0.011)
+chk("origin cheapest under profile in {TiRex, ETS+EQ}", all(b in ("tirex_lt_raw", "etseq_lt_raw") for b in _best), True)
+_mt = pd.read_csv(R / "multi_origin_tau_lt.csv")
+_mt = _mt[(_mt.demand_path == "profile") & np.isclose(_mt.b, 1.0) & np.isclose(_mt.q, 0.9)]
+chk("origins with positive WQL tau q=0.9 under profile", int((_mt.tau_wql > 0).sum()), 6)
+
+# ── third pass: shelf life 3, lead time 1 (B.5) ──
+def _ranks(tag):
+    x = pd.read_csv(R / f"inventory_{tag}.csv"); x = x[x.is_fixed_cr & ~x.run.str.contains("equ_")]
+    out = {}
+    for sc in ["low_margin_waste_dominant", "medium_margin", "high_margin_stockout_dominant"]:
+        s = x[x.scenario == sc].sort_values("cost_per_unit_demand").reset_index(drop=True)
+        out[sc] = (int(s.index[s.run == "lightgbm_lt_raw"][0]) + 1, float(s.set_index("run").cost_per_unit_demand["lightgbm_lt_raw"]),
+                   float(s.set_index("run").cost_per_unit_demand["ft_lora_r16_lr1e-3_s0"]))
+    return out
+_ind, _com = _ranks("lt_sl3_L1_indep"), _ranks("lt_sl3_L1_comon")
+chk("sl3 L1 indep LightGBM ranks", tuple(v[0] for v in _ind.values()), (1, 10, 8))
+chk("sl3 L1 indep LightGBM waste cost", round(_ind["low_margin_waste_dominant"][1], 4), 0.0554, 0.00006)
+chk("sl3 L1 indep LightGBM medium/shortage", (round(_ind["medium_margin"][1], 4), round(_ind["high_margin_stockout_dominant"][1], 4)), (0.1087, 0.1667))
+chk("sl3 L1 indep adapted C2 medium/shortage", (round(_ind["medium_margin"][2], 4), round(_ind["high_margin_stockout_dominant"][2], 4)), (0.1016, 0.1410))
+chk("sl3 L1 comon LightGBM ranks", tuple(v[0] for v in _com.values()), (1, 2, 1))
+chk("sl3 L1 comon medium LightGBM/adapted", (round(_com["medium_margin"][1], 4), round(_com["medium_margin"][2], 4)), (0.0924, 0.0922))
+chk("sl3 L1 comon shortage LightGBM/adapted", (round(_com["high_margin_stockout_dominant"][1], 4), round(_com["high_margin_stockout_dominant"][2], 4)), (0.1234, 0.1302))
+
 n_bad = sum(1 for c in checks if not c[3])
 print(f"\n{len(checks)} checks, {n_bad} mismatches")

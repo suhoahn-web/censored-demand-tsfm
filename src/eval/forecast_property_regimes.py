@@ -29,7 +29,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--dataset", default="lt")
     ap.add_argument("--demand-path", default="observed",
-                    choices=["observed", "uplift", "clean"])
+                    choices=["observed", "uplift", "clean", "profile"])
     ap.add_argument("--n-boot", type=int, default=1000)
     ap.add_argument("--b", type=float, nargs="+", default=[0.3, 1.0, 3.0])
     args = ap.parse_args()
