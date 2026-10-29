@@ -12,6 +12,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from docx_post import finalize  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 JORS = ROOT.parent / "Target Journal" / "Journal of the Operational Research Society"
 REV = JORS / "Revision-1"
@@ -70,4 +73,5 @@ r = subprocess.run(["pandoc", str(md_path), "-o", str(docx), "--from",
                     "--to", "docx", "--resource-path", str(FIG)], capture_output=True, text=True)
 if r.returncode != 0:
     sys.exit(r.stderr[-2000:])
+finalize(docx)
 print(f"marked paragraphs: {n_marked} of {n_total}; built: {docx}")

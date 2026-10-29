@@ -15,6 +15,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from docx_post import finalize  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 JORS = ROOT.parent / "Target Journal" / "Journal of the Operational Research Society"
 REV = JORS / "Revision-1"
@@ -78,7 +81,8 @@ def fig(n: int, fname: str, caption: str, width: str = "100%") -> str:
     p = FIG / fname
     if not p.exists():
         sys.exit(f"missing figure {p}")
-    return f"\n![{caption}]({p.as_posix()}){{ width={width} }}\n\n**Fig. {n}.** {caption}\n\n"
+    # empty alt text: pandoc would otherwise add its own caption below the image
+    return f"\n![]({p.as_posix()}){{ width={width} }}\n\n**Fig. {n}.** {caption}\n\n"
 
 
 def insert_after(t: str, anchor: str, block: str) -> str:
@@ -257,6 +261,7 @@ def main() -> None:
         r = subprocess.run(cmd, capture_output=True, text=True)
         if r.returncode != 0:
             sys.exit(r.stderr[-2000:])
+        finalize(REV / name)
         print("built:", REV / name)
 
 
